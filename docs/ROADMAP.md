@@ -1,7 +1,7 @@
 # Omadjinn roadmap
 
 Ideas for after the next release, in rough order. Nothing here is promised, and the order can
-change. Ideas and bug reports are welcome (links to come when the repo is up).
+change. Ideas and bug reports are welcome: https://github.com/tonyfarson/omadjinn/issues
 
 ## Next
 

@@ -2,7 +2,7 @@
 
 All notable changes to Omadjinn - Floating Window Controls. Dates are YYYY-MM-DD.
 
-## Unreleased
+## 1.1.0 - 2026-11-07
 
 ### Added
 - Default keys, registered by the plugin at runtime (no `bindings.lua` edit): `ALT + arrows` snap,
