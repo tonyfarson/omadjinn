@@ -30,7 +30,10 @@ Column {
     var at = layouts.findIndex(function(x) { return x.id === id })
     if (at < 0) return
     var before = JSON.parse(JSON.stringify(layouts[at]))
-    if (service.deleteLayout(id)) ghost = { layout: before, index: at }
+    var ok = service.deleteLayout(id)
+    console.log("OJDEL remove", id, ok, at)
+    if (ok) ghost = { layout: before, index: at }
+    console.log("OJDEL ghost", JSON.stringify(ghost), "shown", shown.length)
   }
 
   function undoRemove() {
@@ -39,6 +42,7 @@ Column {
   }
 
   function forgetDelete() {
+    console.log("OJDEL forget", visible)
     ghost = null
     if (service) service.undoLayouts = null
   }
@@ -108,7 +112,7 @@ Column {
             width: Style.space(28)
             anchors.verticalCenter: parent.verticalCenter
             horizontalAlignment: Text.AlignHCenter
-            opacity: layoutRow.gone ? 0.45 : 1
+            opacity: layoutRow.gone ? 0 : 1
           text: modelData.icon || root.defaultIcon
             color: Commons.Color.foreground
             font.family: Style.font.family
@@ -117,9 +121,10 @@ Column {
 
           TextField {
             id: nameField
-            width: parent.width - Style.space(40) - (editButton.visible ? editButton.width + Style.space(12) : 0) - (trashButton.visible ? trashButton.width + Style.space(12) : 0)
+            width: parent.width - Style.space(40) - editButton.width - Style.space(12) - (trashButton.visible ? trashButton.width + Style.space(12) : 0)
             readOnly: !layoutRow.editing
-          opacity: layoutRow.gone ? 0.45 : 1
+          enabled: !layoutRow.gone
+          opacity: layoutRow.gone ? 0 : 1
             text: modelData.name || modelData.id
             // Enter or leaving the field saves; Esc puts the old name back.
             onEditingFinished: layoutRow.finish(true)
