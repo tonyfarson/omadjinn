@@ -405,3 +405,23 @@ function splitLines(tree) {
   walk(tree, [], [0, 0, 1, 1])
   return out
 }
+
+// Every zone with its path, for drawing and picking in the editor.
+function leafZones(tree) {
+  var out = []
+  function walk(n, path, rect) {
+    if (!n || n.leaf) { out.push({ path: path, rect: rect }); return }
+    var x, y
+    if (n.dir === "v") {
+      x = rect[0] + n.at * rect[2]
+      walk(n.a, path.concat([0]), [rect[0], rect[1], x - rect[0], rect[3]])
+      walk(n.b, path.concat([1]), [x, rect[1], rect[0] + rect[2] - x, rect[3]])
+    } else {
+      y = rect[1] + n.at * rect[3]
+      walk(n.a, path.concat([0]), [rect[0], rect[1], rect[2], y - rect[1]])
+      walk(n.b, path.concat([1]), [rect[0], y, rect[2], rect[1] + rect[3] - y])
+    }
+  }
+  walk(tree, [], [0, 0, 1, 1])
+  return out
+}

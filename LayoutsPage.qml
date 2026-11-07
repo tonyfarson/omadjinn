@@ -24,191 +24,226 @@ Column {
 
   Commons.Translations { id: strings; directory: Qt.resolvedUrl("i18n") }
 
-  Repeater {
-    model: root.layouts
+  // Which layout the zone editor is open for: "" when closed, "new" for a new layout.
+  property string editorFor: ""
+  readonly property bool editorOpen: editorFor !== ""
 
-    Column {
-      id: layoutRow
-      required property var modelData
-      // The name is read-only until Edit is clicked; the button then reads Save.
-      // While editing, the glyph choices show under the name.
-      property bool editing: false
-      width: root.width
-      spacing: Style.space(8)
+  ZoneEditor {
+    visible: root.editorOpen
+    width: root.width
+    service: root.service
+    layoutId: root.editorFor === "new" ? "" : root.editorFor
+    onFinished: root.editorFor = ""
+  }
 
-      // Saves the name (or puts the old one back) and closes the field.
-      function finish(save) {
-        if (!editing) return
-        editing = false
-        root.focusRequested()
-        var name = nameField.text.trim()
-        if (!save || name === "") { nameField.text = modelData.name || modelData.id; return }
-        if (name !== modelData.name && root.service) root.service.renameLayout(modelData.id, name)
-      }
+  Column {
+    id: listView
+    visible: !root.editorOpen
+    width: root.width
+    spacing: root.spacing
 
-      Row {
-        width: parent.width
-        spacing: Style.space(12)
 
-        // The layout's glyph, the same one the toast shows.
-        Text {
-          textFormat: Text.PlainText
-          width: Style.space(28)
-          anchors.verticalCenter: parent.verticalCenter
-          horizontalAlignment: Text.AlignHCenter
-          text: modelData.icon || root.defaultIcon
-          color: Commons.Color.foreground
-          font.family: Style.font.family
-          font.pixelSize: Style.font.title
+    Repeater {
+      model: root.layouts
+
+      Column {
+        id: layoutRow
+        required property var modelData
+        // The name is read-only until Edit is clicked; the button then reads Save.
+        // While editing, the glyph choices show under the name.
+        property bool editing: false
+        width: root.width
+        spacing: Style.space(8)
+
+        // Saves the name (or puts the old one back) and closes the field.
+        function finish(save) {
+          if (!editing) return
+          editing = false
+          root.focusRequested()
+          var name = nameField.text.trim()
+          if (!save || name === "") { nameField.text = modelData.name || modelData.id; return }
+          if (name !== modelData.name && root.service) root.service.renameLayout(modelData.id, name)
         }
 
-        TextField {
-          id: nameField
-          width: parent.width - Style.space(40) - editButton.width - Style.space(12)
-          readOnly: !layoutRow.editing
-          text: modelData.name || modelData.id
-          // Enter or leaving the field saves; Esc puts the old name back.
-          onEditingFinished: layoutRow.finish(true)
-          Keys.onEscapePressed: layoutRow.finish(false)
+        Row {
+          width: parent.width
+          spacing: Style.space(12)
+
+          // The layout's glyph, the same one the toast shows.
+          Text {
+            textFormat: Text.PlainText
+            width: Style.space(28)
+            anchors.verticalCenter: parent.verticalCenter
+            horizontalAlignment: Text.AlignHCenter
+            text: modelData.icon || root.defaultIcon
+            color: Commons.Color.foreground
+            font.family: Style.font.family
+            font.pixelSize: Style.font.title
+          }
+
+          TextField {
+            id: nameField
+            width: parent.width - Style.space(40) - editButton.width - Style.space(12)
+            readOnly: !layoutRow.editing
+            text: modelData.name || modelData.id
+            // Enter or leaving the field saves; Esc puts the old name back.
+            onEditingFinished: layoutRow.finish(true)
+            Keys.onEscapePressed: layoutRow.finish(false)
+          }
+
+          // Edit opens the field with the cursor at the end of the name; Save closes it.
+          Button {
+            id: editButton
+            anchors.verticalCenter: parent.verticalCenter
+            text: layoutRow.editing ? strings.t("save") : strings.t("edit")
+            bordered: true
+            onClicked: {
+              if (layoutRow.editing) { layoutRow.finish(true); return }
+              layoutRow.editing = true
+              nameField.forceActiveFocus()
+              nameField.cursorPosition = nameField.text.length
+            }
+          }
         }
 
-        // Edit opens the field with the cursor at the end of the name; Save closes it.
+        // The glyph choices, while editing. Picking one saves it at once.
+        Flow {
+          visible: layoutRow.editing
+          width: parent.width
+          spacing: Style.space(6)
+
+          Repeater {
+            model: root.glyphs
+
+            Item {
+              required property string modelData
+              readonly property bool current: (layoutRow.modelData.icon || root.defaultIcon) === modelData
+              width: pick.width
+              height: pick.height
+
+              Rectangle {
+                anchors.fill: parent
+                radius: Style.cornerRadius
+                color: Commons.Color.accent
+                visible: parent.current
+              }
+
+              Button {
+                id: pick
+                text: parent.modelData
+                bordered: true
+                fontSize: Style.font.title
+                foreground: parent.current ? Commons.Color.background : Commons.Color.foreground
+                onClicked: if (root.service) root.service.setLayoutIcon(layoutRow.modelData.id, parent.modelData)
+              }
+            }
+          }
+        }
+
+        // Opens the zone editor for this layout.
         Button {
-          id: editButton
-          anchors.verticalCenter: parent.verticalCenter
-          text: layoutRow.editing ? strings.t("save") : strings.t("edit")
+          visible: layoutRow.editing
+          text: strings.t("layouts.zones")
           bordered: true
-          onClicked: {
-            if (layoutRow.editing) { layoutRow.finish(true); return }
-            layoutRow.editing = true
-            nameField.forceActiveFocus()
-            nameField.cursorPosition = nameField.text.length
-          }
-        }
-      }
-
-      // The glyph choices, while editing. Picking one saves it at once.
-      Flow {
-        visible: layoutRow.editing
-        width: parent.width
-        spacing: Style.space(6)
-
-        Repeater {
-          model: root.glyphs
-
-          Item {
-            required property string modelData
-            readonly property bool current: (layoutRow.modelData.icon || root.defaultIcon) === modelData
-            width: pick.width
-            height: pick.height
-
-            Rectangle {
-              anchors.fill: parent
-              radius: Style.cornerRadius
-              color: Commons.Color.accent
-              visible: parent.current
-            }
-
-            Button {
-              id: pick
-              text: parent.modelData
-              bordered: true
-              fontSize: Style.font.title
-              foreground: parent.current ? Commons.Color.background : Commons.Color.foreground
-              onClicked: if (root.service) root.service.setLayoutIcon(layoutRow.modelData.id, parent.modelData)
-            }
-          }
+          onClicked: { layoutRow.finish(true); root.editorFor = layoutRow.modelData.id }
         }
       }
     }
-  }
 
-  PanelSectionHeader {
-    topPadding: Style.space(12)
-    text: strings.t("layouts.custom")
-  }
+    Button {
+      text: strings.t("layouts.new")
+      bordered: true
+      onClicked: root.editorFor = "new"
+    }
 
-  Text {
-    textFormat: Text.PlainText
-    width: parent.width
-    wrapMode: Text.WordWrap
-    text: strings.t("layouts.custom.soon")
-    color: Qt.darker(Commons.Color.foreground, 1.5)
-    font.family: Style.font.family
-    font.pixelSize: Style.font.caption
-  }
-
-  // Layouts left out because their zones are wrong.
-  Column {
-    visible: root.problems.length > 0
-    width: parent.width
-    spacing: Style.space(4)
+    PanelSectionHeader {
+      topPadding: Style.space(12)
+      text: strings.t("layouts.custom")
+    }
 
     Text {
       textFormat: Text.PlainText
       width: parent.width
       wrapMode: Text.WordWrap
-      text: "! " + strings.t("layouts.problems")
-      color: Commons.Color.foreground
+      text: strings.t("layouts.custom.soon")
+      color: Qt.darker(Commons.Color.foreground, 1.5)
       font.family: Style.font.family
       font.pixelSize: Style.font.caption
-      font.bold: true
     }
 
-    Repeater {
-      model: root.problems
+    // Layouts left out because their zones are wrong.
+    Column {
+      visible: root.problems.length > 0
+      width: parent.width
+      spacing: Style.space(4)
+
       Text {
-        required property string modelData
         textFormat: Text.PlainText
-        width: root.width
+        width: parent.width
         wrapMode: Text.WordWrap
-        text: modelData
-        color: Qt.darker(Commons.Color.foreground, 1.3)
+        text: "! " + strings.t("layouts.problems")
+        color: Commons.Color.foreground
         font.family: Style.font.family
         font.pixelSize: Style.font.caption
+        font.bold: true
       }
-    }
-  }
 
-  Item {
-    width: root.width
-    height: Math.max(openLink.implicitHeight, restoreButton.height)
-
-    PageLink {
-      id: openLink
-      anchors.left: parent.left
-      anchors.verticalCenter: parent.verticalCenter
-      text: strings.t("layouts.openfile")
-      onClicked: if (root.service) root.service.openLayoutsFile()
-    }
-
-    Button {
-      id: restoreButton
-      anchors.right: parent.right
-      anchors.verticalCenter: parent.verticalCenter
-      text: root.armed ? strings.t("layouts.restore.confirm") : strings.t("layouts.restore")
-      bordered: true
-      onClicked: {
-        if (!root.armed) { root.armed = true; armTimer.restart(); return }
-        root.armed = false
-        if (root.service) root.service.restoreLayouts(function(name) {
-          root.note = name === "" ? strings.t("layouts.restored.none") : strings.t("layouts.restored") + " " + name
-        })
+      Repeater {
+        model: root.problems
+        Text {
+          required property string modelData
+          textFormat: Text.PlainText
+          width: root.width
+          wrapMode: Text.WordWrap
+          text: modelData
+          color: Qt.darker(Commons.Color.foreground, 1.3)
+          font.family: Style.font.family
+          font.pixelSize: Style.font.caption
+        }
       }
     }
 
-    // The first click only arms the button; it disarms itself after a few seconds.
-    Timer { id: armTimer; interval: 5000; onTriggered: root.armed = false }
-  }
+    Item {
+      width: root.width
+      height: Math.max(openLink.implicitHeight, restoreButton.height)
 
-  Text {
-    visible: root.note !== ""
-    textFormat: Text.PlainText
-    width: parent.width
-    wrapMode: Text.WordWrap
-    text: root.note
-    color: Qt.darker(Commons.Color.foreground, 1.5)
-    font.family: Style.font.family
-    font.pixelSize: Style.font.caption
+      PageLink {
+        id: openLink
+        anchors.left: parent.left
+        anchors.verticalCenter: parent.verticalCenter
+        text: strings.t("layouts.openfile")
+        onClicked: if (root.service) root.service.openLayoutsFile()
+      }
+
+      Button {
+        id: restoreButton
+        anchors.right: parent.right
+        anchors.verticalCenter: parent.verticalCenter
+        text: root.armed ? strings.t("layouts.restore.confirm") : strings.t("layouts.restore")
+        bordered: true
+        onClicked: {
+          if (!root.armed) { root.armed = true; armTimer.restart(); return }
+          root.armed = false
+          if (root.service) root.service.restoreLayouts(function(name) {
+            root.note = name === "" ? strings.t("layouts.restored.none") : strings.t("layouts.restored") + " " + name
+          })
+        }
+      }
+
+      // The first click only arms the button; it disarms itself after a few seconds.
+      Timer { id: armTimer; interval: 5000; onTriggered: root.armed = false }
+    }
+
+    Text {
+      visible: root.note !== ""
+      textFormat: Text.PlainText
+      width: parent.width
+      wrapMode: Text.WordWrap
+      text: root.note
+      color: Qt.darker(Commons.Color.foreground, 1.5)
+      font.family: Style.font.family
+      font.pixelSize: Style.font.caption
+    }
+
   }
 }

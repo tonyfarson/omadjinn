@@ -1,6 +1,6 @@
 // Run with: node tests/model.test.js   (Model.js is a QML library; load it as text.)
 const fs = require("fs"), assert = require("assert")
-const M = {}; new Function("exports", fs.readFileSync(__dirname + "/../Model.js", "utf8").replace(".pragma library", "") + "\nObject.assign(exports,{parseGap,zonesFor,pickZone,origSize,nextLayoutIndex,zoneName,KEY_ACTIONS,parseKey,keysFor,keyConflict,layoutProblem,checkLayouts,treeToZones,zonesToTree,splitZone,mergeSplit,moveSplit,splitLines,nodeRect,nodeAt})")(M)
+const M = {}; new Function("exports", fs.readFileSync(__dirname + "/../Model.js", "utf8").replace(".pragma library", "") + "\nObject.assign(exports,{parseGap,zonesFor,pickZone,origSize,nextLayoutIndex,zoneName,KEY_ACTIONS,parseKey,keysFor,keyConflict,layoutProblem,checkLayouts,treeToZones,zonesToTree,splitZone,mergeSplit,moveSplit,splitLines,nodeRect,nodeAt,leafZones})")(M)
 
 // kijo's monitor: 3840x2160 at scale 1.5, bar reserves 30 at the top.
 const mon = { x: -1280, y: -1440, width: 3840, height: 2160, scale: 1.5, reserved: [0, 30, 0, 0] }
@@ -129,3 +129,5 @@ assert.strictEqual(M.treeToZones(t).length, 2)
 let tiny = { dir: "v", at: 0.05, a: { leaf: true }, b: { leaf: true } }
 assert.strictEqual(M.splitZone(tiny, [0], "v"), tiny)
 console.log("model.test.js: editor ok")
+assert.strictEqual(M.leafZones(M.zonesToTree(shipped[2].zones)).length, shipped[2].zones.length)
+console.log("model.test.js: leafZones ok")

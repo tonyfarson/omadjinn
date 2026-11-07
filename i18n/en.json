@@ -47,5 +47,12 @@
   "layouts.restore": "Restore defaults",
   "layouts.restored": "Built-in layouts restored. Your file was kept as ~/.config/omadjinn/",
   "layouts.restore.confirm": "Click again to restore",
-  "layouts.restored.none": "You are already using the built-in layouts."
+  "layouts.restored.none": "You are already using the built-in layouts.",
+  "layouts.zones": "Edit zones",
+  "layouts.new": "New layout",
+  "editor.splitv": "Split ┃",
+  "editor.splith": "Split ━",
+  "editor.merge": "Merge line",
+  "editor.hint": "Click a zone, then split it. Drag a line to move it. Click a line, then Merge line to join the zones on its two sides.",
+  "editor.cannot": "This layout has overlapping zones or gaps, so it can't be drawn here. Edit it in layouts.json."
 }
