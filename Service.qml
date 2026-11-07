@@ -187,6 +187,10 @@ Item {
     if (!win.floating) Hyprland.dispatch("hl.dsp.window.float({ action = 'enable', window = '" + target + "' })")
     Hyprland.dispatch("hl.dsp.window.resize({ x = " + z[2] + ", y = " + z[3] + ", relative = false, window = '" + target + "' })")
     Hyprland.dispatch("hl.dsp.window.move({ x = " + z[0] + ", y = " + z[1] + ", relative = false, window = '" + target + "' })")
+    // Bring it to the front. A snap that comes from a click we swallowed (the menu)
+    // never focused or raised the window, so ask Hyprland to do both.
+    Hyprland.dispatch("hl.dsp.focus({ window = '" + target + "' })")
+    Hyprland.dispatch("hl.dsp.window.alter_zorder({ window = '" + target + "', mode = 'top' })")
   }
 
   // ── Remember the pre-snap size (for the drag-out restore) ──────────────────

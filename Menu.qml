@@ -170,6 +170,67 @@ Item {
             }
           }
         }
+
+        // A thin line, then the layout row: the name, and arrows to cycle.
+        Rectangle {
+          width: parent.width
+          height: 1
+          color: Util.alpha(root.text, 0.2)
+        }
+
+        Item {
+          width: column.width
+          height: root.rowHeight
+
+          Text {
+            textFormat: Text.PlainText
+            anchors.left: parent.left
+            anchors.leftMargin: Style.space(8)
+            anchors.right: prevArrow.left
+            anchors.verticalCenter: parent.verticalCenter
+            text: "Layout: " + (root.layout ? String(root.layout.name || root.layout.id) : "")
+            color: Util.alpha(root.text, 0.8)
+            font.family: Style.font.family
+            font.pixelSize: Style.font.body
+            elide: Text.ElideRight
+          }
+
+          Repeater {
+            model: [{ glyph: "\u2039", dir: "prev" }, { glyph: "\u203A", dir: "next" }]
+
+            Rectangle {
+              id: arrow
+              required property var modelData
+              required property int index
+              property alias hovered: arrowArea.containsMouse
+              width: root.rowHeight
+              height: root.rowHeight
+              radius: Style.cornerRadius / 2
+              x: parent.width - root.rowHeight * (2 - index)
+              color: arrowArea.containsMouse ? root.hoverFill : "transparent"
+
+              Text {
+                textFormat: Text.PlainText
+                anchors.centerIn: parent
+                text: arrow.modelData.glyph
+                color: arrowArea.containsMouse ? root.accent : root.text
+                font.family: Style.font.family
+                font.pixelSize: Style.font.title
+              }
+
+              MouseArea {
+                id: arrowArea
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: if (root.service) root.service.cycle(arrow.modelData.dir)
+              }
+            }
+          }
+
+          // Anchor for the label's right edge: the left edge of the arrow pair.
+          Item { id: prevArrow; x: parent.width - root.rowHeight * 2; width: 0; height: 1 }
+        }
       }
     }
   }
