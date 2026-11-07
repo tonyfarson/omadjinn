@@ -12,6 +12,9 @@ Column {
   readonly property var problems: service ? service.layoutProblems : []
   property string note: ""
   property bool armed: false
+  property string deletedName: ""
+
+  Component.onDestruction: if (service) service.undoLayouts = null
 
   // Shown when a layout has no glyph, and the choices offered when editing one.
   readonly property string defaultIcon: "\uebeb"
@@ -83,7 +86,7 @@ Column {
 
           TextField {
             id: nameField
-            width: parent.width - Style.space(40) - editButton.width - Style.space(12)
+            width: parent.width - Style.space(40) - editButton.width - Style.space(12) - (trashButton.visible ? trashButton.width + Style.space(12) : 0)
             readOnly: !layoutRow.editing
             text: modelData.name || modelData.id
             // Enter or leaving the field saves; Esc puts the old name back.
@@ -102,6 +105,23 @@ Column {
               layoutRow.editing = true
               nameField.forceActiveFocus()
               nameField.cursorPosition = nameField.text.length
+            }
+          }
+
+          // Deletes the layout at once; the note offers Undo. The last layout stays.
+          Button {
+            id: trashButton
+            visible: root.layouts.length > 1
+            anchors.verticalCenter: parent.verticalCenter
+            text: "\uea81"
+            bordered: true
+            tooltipText: strings.t("layouts.delete.tip")
+            onClicked: {
+              var name = layoutRow.modelData.name || layoutRow.modelData.id
+              if (root.service && root.service.deleteLayout(layoutRow.modelData.id)) {
+                root.deletedName = name
+                root.note = ""
+              }
             }
           }
         }
@@ -232,6 +252,26 @@ Column {
 
       // The first click only arms the button; it disarms itself after a few seconds.
       Timer { id: armTimer; interval: 5000; onTriggered: root.armed = false }
+    }
+
+    Row {
+      visible: root.deletedName !== "" && root.service && root.service.undoLayouts !== null
+      spacing: Style.space(10)
+
+      Text {
+        textFormat: Text.PlainText
+        anchors.verticalCenter: parent.verticalCenter
+        text: strings.t("layouts.deleted") + ": " + root.deletedName
+        color: Qt.darker(Commons.Color.foreground, 1.5)
+        font.family: Style.font.family
+        font.pixelSize: Style.font.caption
+      }
+
+      PageLink {
+        anchors.verticalCenter: parent.verticalCenter
+        text: strings.t("layouts.undo")
+        onClicked: { if (root.service) root.service.undoDelete(); root.deletedName = "" }
+      }
     }
 
     Text {
