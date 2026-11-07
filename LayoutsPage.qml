@@ -12,9 +12,26 @@ Column {
   readonly property var problems: service ? service.layoutProblems : []
   property string note: ""
   property bool armed: false
-  property string deletedName: ""
+  // The layout just deleted stays in its place as a dimmed row, with an undo button where
+  // the trash button was, until you leave the page or close the panel.
+  property var ghost: null   // { layout, index }
+  readonly property var shown: {
+    var list = layouts.slice()
+    if (ghost) {
+      var g = JSON.parse(JSON.stringify(ghost.layout))
+      g._deleted = true
+      list.splice(Math.min(ghost.index, list.length), 0, g)
+    }
+    return list
+  }
 
-  Component.onDestruction: if (service) service.undoLayouts = null
+  function forgetDelete() {
+    ghost = null
+    if (service) service.undoLayouts = null
+  }
+
+  onVisibleChanged: if (!visible) forgetDelete()
+  Component.onDestruction: forgetDelete()
 
   // Shown when a layout has no glyph, and the choices offered when editing one.
   readonly property string defaultIcon: "\uebeb"
@@ -47,7 +64,7 @@ Column {
 
 
     Repeater {
-      model: root.layouts
+      model: root.shown
 
       Column {
         id: layoutRow
@@ -78,7 +95,8 @@ Column {
             width: Style.space(28)
             anchors.verticalCenter: parent.verticalCenter
             horizontalAlignment: Text.AlignHCenter
-            text: modelData.icon || root.defaultIcon
+            opacity: layoutRow.gone ? 0.45 : 1
+          text: modelData.icon || root.defaultIcon
             color: Commons.Color.foreground
             font.family: Style.font.family
             font.pixelSize: Style.font.title
@@ -86,8 +104,9 @@ Column {
 
           TextField {
             id: nameField
-            width: parent.width - Style.space(40) - editButton.width - Style.space(12) - (trashButton.visible ? trashButton.width + Style.space(12) : 0)
+            width: parent.width - Style.space(40) - (editButton.visible ? editButton.width + Style.space(12) : 0) - (trashButton.visible ? trashButton.width + Style.space(12) : 0)
             readOnly: !layoutRow.editing
+          opacity: layoutRow.gone ? 0.45 : 1
             text: modelData.name || modelData.id
             // Enter or leaving the field saves; Esc puts the old name back.
             onEditingFinished: layoutRow.finish(true)
@@ -108,20 +127,26 @@ Column {
             }
           }
 
-          // Deletes the layout at once; the note offers Undo. The last layout stays.
+          // Deletes the layout at once. The row then stays, dimmed, and this button becomes
+          // undo. The last layout can't be deleted, so its trash button is hidden.
           Button {
             id: trashButton
-            visible: root.layouts.length > 1
+            visible: layoutRow.gone || root.layouts.length > 1
             anchors.verticalCenter: parent.verticalCenter
-            text: "\uea81"
+            text: layoutRow.gone ? "\uea77" : "\uea81"
             bordered: true
-            tooltipText: strings.t("layouts.delete.tip")
+            tooltipText: layoutRow.gone ? strings.t("layouts.undo") : strings.t("layouts.delete.tip")
             onClicked: {
-              var name = layoutRow.modelData.name || layoutRow.modelData.id
-              if (root.service && root.service.deleteLayout(layoutRow.modelData.id)) {
-                root.deletedName = name
-                root.note = ""
+              if (layoutRow.gone) {
+                if (root.service) root.service.undoDelete()
+                root.ghost = null
+                return
               }
+              // Set up the dimmed row first: deleting rebuilds this row.
+              var before = JSON.parse(JSON.stringify(layoutRow.modelData))
+              var at = root.layouts.findIndex(function(x) { return x.id === before.id })
+              root.ghost = { layout: before, index: at }
+              if (!root.service || !root.service.deleteLayout(before.id)) root.ghost = null
             }
           }
         }
@@ -167,26 +192,6 @@ Column {
           bordered: true
           onClicked: { layoutRow.finish(true); root.editorFor = layoutRow.modelData.id }
         }
-      }
-    }
-
-    Row {
-      visible: root.deletedName !== "" && root.service && root.service.undoLayouts !== null
-      spacing: Style.space(10)
-
-      Text {
-        textFormat: Text.PlainText
-        anchors.verticalCenter: parent.verticalCenter
-        text: strings.t("layouts.deleted") + ": " + root.deletedName
-        color: Qt.darker(Commons.Color.foreground, 1.5)
-        font.family: Style.font.family
-        font.pixelSize: Style.font.caption
-      }
-
-      PageLink {
-        anchors.verticalCenter: parent.verticalCenter
-        text: strings.t("layouts.undo")
-        onClicked: { if (root.service) root.service.undoDelete(); root.deletedName = "" }
       }
     }
 
