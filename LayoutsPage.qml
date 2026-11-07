@@ -25,6 +25,19 @@ Column {
     return list
   }
 
+  function removeLayout(id) {
+    if (!service) return
+    var at = layouts.findIndex(function(x) { return x.id === id })
+    if (at < 0) return
+    var before = JSON.parse(JSON.stringify(layouts[at]))
+    if (service.deleteLayout(id)) ghost = { layout: before, index: at }
+  }
+
+  function undoRemove() {
+    if (service) service.undoDelete()
+    ghost = null
+  }
+
   function forgetDelete() {
     ghost = null
     if (service) service.undoLayouts = null
@@ -136,18 +149,9 @@ Column {
             text: layoutRow.gone ? "\uea77" : "\uea81"
             bordered: true
             tooltipText: layoutRow.gone ? strings.t("layouts.undo") : strings.t("layouts.delete.tip")
-            onClicked: {
-              if (layoutRow.gone) {
-                if (root.service) root.service.undoDelete()
-                root.ghost = null
-                return
-              }
-              // Set up the dimmed row first: deleting rebuilds this row.
-              var before = JSON.parse(JSON.stringify(layoutRow.modelData))
-              var at = root.layouts.findIndex(function(x) { return x.id === before.id })
-              root.ghost = { layout: before, index: at }
-              if (!root.service || !root.service.deleteLayout(before.id)) root.ghost = null
-            }
+            // The work happens in functions on the page: deleting rebuilds this row, and
+            // code running inside it would stop part way.
+            onClicked: layoutRow.gone ? root.undoRemove() : root.removeLayout(layoutRow.modelData.id)
           }
         }
 
