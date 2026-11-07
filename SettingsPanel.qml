@@ -187,7 +187,21 @@ Item {
     contentWidth: width
     contentHeight: pageLoader.item ? pageLoader.item.implicitHeight : 0
     interactive: contentHeight > height
-    ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
+    // Always visible when the page is taller than the panel, absent when it fits. Drawn
+    // in the theme's text colour so it suits any theme.
+    ScrollBar.vertical: ScrollBar {
+      policy: flick.contentHeight > flick.height + 1 ? ScrollBar.AlwaysOn : ScrollBar.AlwaysOff
+      implicitWidth: Style.space(8)
+      contentItem: Rectangle {
+        implicitWidth: Style.space(6)
+        radius: width / 2
+        color: Util.alpha(Commons.Color.foreground, parent.pressed ? 0.7 : 0.45)
+      }
+      background: Rectangle {
+        radius: width / 2
+        color: Util.alpha(Commons.Color.foreground, 0.1)
+      }
+    }
 
     Loader {
       id: pageLoader
