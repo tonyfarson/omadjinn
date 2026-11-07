@@ -20,9 +20,22 @@ Column {
     model: root.layouts
 
     Row {
+      id: layoutRow
       required property var modelData
+      // The name is read-only until Edit is clicked; the button then reads Save.
+      property bool editing: false
       width: root.width
       spacing: Style.space(12)
+
+      // Saves the name (or puts the old one back) and closes the field.
+      function finish(save) {
+        if (!editing) return
+        editing = false
+        root.focusRequested()
+        var name = nameField.text.trim()
+        if (!save || name === "") { nameField.text = modelData.name || modelData.id; return }
+        if (name !== modelData.name && root.service) root.service.renameLayout(modelData.id, name)
+      }
 
       Text {
         textFormat: Text.PlainText
@@ -38,24 +51,25 @@ Column {
       TextField {
         id: nameField
         width: parent.width - Style.space(40) - editButton.width - Style.space(12)
+        readOnly: !layoutRow.editing
         text: modelData.name || modelData.id
-        // Save when the field is left or Enter is pressed, not per keystroke.
-        onEditingFinished: {
-          // Hand keyboard focus back to the panel so Esc works again.
-          root.focusRequested()
-          var name = text.trim()
-          if (name === "") { text = modelData.name || modelData.id; return }
-          if (name !== modelData.name && root.service) root.service.renameLayout(modelData.id, name)
-        }
+        // Enter or leaving the field saves; Esc puts the old name back.
+        onEditingFinished: layoutRow.finish(true)
+        Keys.onEscapePressed: layoutRow.finish(false)
       }
 
-      // Opens the field for editing, with the cursor at the end of the name.
+      // Edit opens the field with the cursor at the end of the name; Save closes it.
       Button {
         id: editButton
         anchors.verticalCenter: parent.verticalCenter
-        text: strings.t("edit")
+        text: layoutRow.editing ? strings.t("save") : strings.t("edit")
         bordered: true
-        onClicked: { nameField.forceActiveFocus(); nameField.cursorPosition = nameField.text.length }
+        onClicked: {
+          if (layoutRow.editing) { layoutRow.finish(true); return }
+          layoutRow.editing = true
+          nameField.forceActiveFocus()
+          nameField.cursorPosition = nameField.text.length
+        }
       }
     }
   }

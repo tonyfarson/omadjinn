@@ -41,5 +41,6 @@
   "keys.unknown": "That key can't be used.",
   "keys.restore": "Restore defaults",
   "keys.restored": "Default keys restored",
-  "help.bugs": "Bugs?"
+  "help.bugs": "Bugs?",
+  "save": "Save"
 }
