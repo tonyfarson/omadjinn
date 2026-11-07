@@ -32,6 +32,9 @@ layout renaming and a quick start. Not built yet: see the roadmap below.
 
 ## Install
 
+Requires Omarchy 4.5 or later. There is nothing else to install. If Omarchy's window
+titlebars (hyprbars) are on, Omadjinn leaves room for them in each zone.
+
 ```
 omarchy plugin add https://github.com/tonyfarson/omadjinn --enable
 ```
