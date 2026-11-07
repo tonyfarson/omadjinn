@@ -1,6 +1,6 @@
 // Run with: node tests/model.test.js   (Model.js is a QML library; load it as text.)
 const fs = require("fs"), assert = require("assert")
-const M = {}; new Function("exports", fs.readFileSync(__dirname + "/../Model.js", "utf8").replace(".pragma library", "") + "\nObject.assign(exports,{parseGap,zonesFor,pickZone,origSize,nextLayoutIndex})")(M)
+const M = {}; new Function("exports", fs.readFileSync(__dirname + "/../Model.js", "utf8").replace(".pragma library", "") + "\nObject.assign(exports,{parseGap,zonesFor,pickZone,origSize,nextLayoutIndex,zoneName,KEY_ACTIONS,parseKey,keysFor,keyConflict})")(M)
 
 // kijo's monitor: 3840x2160 at scale 1.5, bar reserves 30 at the top.
 const mon = { x: -1280, y: -1440, width: 3840, height: 2160, scale: 1.5, reserved: [0, 30, 0, 0] }
@@ -39,3 +39,42 @@ assert.strictEqual(M.nextLayoutIndex(L, "c", "next"), 0)
 assert.strictEqual(M.nextLayoutIndex(L, "a", "prev"), 2)
 assert.strictEqual(M.nextLayoutIndex(L, "", "next"), 0)
 console.log("model.test.js: ok")
+
+// ── zone names
+assert.strictEqual(M.zoneName([0, 0, 0.5, 1]), "Left half")
+assert.strictEqual(M.zoneName([0.5, 0.5, 0.5, 0.5]), "Bottom right")
+assert.strictEqual(M.zoneName([0, 0, 1, 1]), "Whole screen")
+assert.strictEqual(M.zoneName([0.25, 0.25, 0.5, 0.5]), "Center")
+
+// ── keys
+const k = M.parseKey
+assert.deepStrictEqual([k("alt + c").text, k("alt + c").mask], ["ALT + C", 8])
+assert.strictEqual(k("Super+Ctrl+shift+left").text, "SUPER + CTRL + SHIFT + LEFT" .replace("LEFT", "left"))
+assert.strictEqual(k("control + alt + x").mask, 12)
+assert.strictEqual(k("ALT + comma").text, "ALT + comma")
+for (const bad of ["", "ALT +", "ALT + C; os.exit()", 'ALT + "C"', "FOO + C", "ALT + a b", "A+B+C+D+E+F+G"]) assert.strictEqual(k(bad), null, bad)
+
+// defaults: one key per action, no two the same, all valid and all on ALT
+const defaults = M.keysFor({})
+assert.strictEqual(defaults.length, M.KEY_ACTIONS.length)
+assert.strictEqual(new Set(defaults.map(d => d.key)).size, defaults.length)
+assert(defaults.every(d => d.key.startsWith("ALT + ")))
+assert.strictEqual(defaults.find(d => d.id === "menu").key, "ALT + C")
+// a user's choice replaces the default; "" turns it off; junk is skipped; skip leaves one out
+const custom = M.keysFor({ keys: { menu: "super + m", settings: "", snapUp: "ALT + 1; boom" } }, { layoutNext: true })
+assert.strictEqual(custom.find(d => d.id === "menu").key, "SUPER + M")
+assert(!custom.some(d => ["settings", "snapUp", "layoutNext"].includes(d.id)))
+
+// conflicts: another bind on the same modifiers and key; our own binds do not count
+const binds = [
+  { modmask: 8, key: "C", description: "Some app" },
+  { modmask: 64, key: "C", description: "Universal copy" },
+  { modmask: 8, key: "LEFT", description: "Omadjinn: Snap window left" },
+  { modmask: 0, key: "mouse:273", description: "" },
+]
+assert.strictEqual(M.keyConflict(binds, "alt + c"), "Some app")
+assert.strictEqual(M.keyConflict(binds, "SUPER + C"), "Universal copy")
+assert.strictEqual(M.keyConflict(binds, "ALT + LEFT"), null)
+assert.strictEqual(M.keyConflict(binds, "ALT + S"), null)
+assert.strictEqual(M.keyConflict(null, "ALT + S"), null)
+console.log("model.test.js: keys ok")

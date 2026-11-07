@@ -132,3 +132,72 @@ function zoneName(zone) {
   if (horiz === "Middle" && vert === "Middle") return "Center"
   return horiz === "Middle" ? vert + " middle" : horiz + " middle"
 }
+
+// ── Keys ─────────────────────────────────────────────────────────────────────
+// Omadjinn registers these with Hyprland itself (hypr/keys.lua), so nobody edits a
+// config file. ALT is the anchor: Omarchy keeps SUPER for itself. A user can change
+// or turn off any of them with a "keys" entry in config.json, e.g. { "keys": { "menu": "ALT + M", "settings": "" } }.
+var KEY_ACTIONS = [
+  { id: "snapLeft",   key: "ALT + LEFT",   cmd: "snap left",    label: "Snap window left" },
+  { id: "snapRight",  key: "ALT + RIGHT",  cmd: "snap right",   label: "Snap window right" },
+  { id: "snapUp",     key: "ALT + UP",     cmd: "snap up",      label: "Snap window up" },
+  { id: "snapDown",   key: "ALT + DOWN",   cmd: "snap down",    label: "Snap window down" },
+  { id: "menu",       key: "ALT + C",      cmd: "menuFocused",  label: "Menu for the focused window" },
+  { id: "layoutPrev", key: "ALT + comma",  cmd: "cycle prev",   label: "Previous layout" },
+  { id: "layoutNext", key: "ALT + period", cmd: "cycle next",   label: "Next layout" },
+  { id: "settings",   key: "ALT + S",      cmd: "toggle",       label: "Settings" }
+]
+
+var MOD_BITS = { SHIFT: 1, CTRL: 4, ALT: 8, SUPER: 64 }
+var MOD_ORDER = ["SUPER", "CTRL", "SHIFT", "ALT"]
+
+// "alt+Left" -> { mods: ["ALT"], key: "LEFT", text: "ALT + LEFT", mask: 8 }, or null if it
+// is not modifiers plus one plain key name. The text goes into Lua source, so only this safe form passes.
+function parseKey(text) {
+  var parts = String(text === undefined || text === null ? "" : text).split("+").map(function(p) { return p.trim() })
+  if (parts.length < 1 || parts.length > 5) return null
+  var key = parts.pop()
+  if (!/^[A-Za-z0-9_]{1,24}$/.test(key)) return null
+  var mods = [], mask = 0
+  for (var i = 0; i < parts.length; i++) {
+    var m = parts[i].toUpperCase()
+    if (m === "CONTROL") m = "CTRL"
+    if (m === "WIN" || m === "META") m = "SUPER"
+    if (!(m in MOD_BITS)) return null
+    if (mods.indexOf(m) < 0) { mods.push(m); mask |= MOD_BITS[m] }
+  }
+  mods.sort(function(a, b) { return MOD_ORDER.indexOf(a) - MOD_ORDER.indexOf(b) })
+  var keyName = /^[A-Za-z]$/.test(key) ? key.toUpperCase() : key
+  return { mods: mods, key: keyName, text: mods.concat([keyName]).join(" + "), mask: mask }
+}
+
+// The keys to register: each action's default, or the user's choice from config.keys
+// ("" turns it off; something unreadable is skipped). `skip` maps action ids to true to leave out.
+function keysFor(config, skip) {
+  var chosen = (config && config.keys && typeof config.keys === "object") ? config.keys : {}
+  var out = []
+  for (var i = 0; i < KEY_ACTIONS.length; i++) {
+    var a = KEY_ACTIONS[i]
+    if (skip && skip[a.id]) continue
+    var want = (a.id in chosen) ? chosen[a.id] : a.key
+    if (want === "") continue
+    var parsed = parseKey(want)
+    if (!parsed) continue
+    out.push({ id: a.id, key: parsed.text, cmd: a.cmd, label: a.label })
+  }
+  return out
+}
+
+// What already holds this key in Hyprland's live bind list (`hyprctl -j binds`), or null.
+// Binds whose description starts with "Omadjinn" are ours and do not count.
+function keyConflict(binds, text) {
+  var want = parseKey(text)
+  if (!want || !Array.isArray(binds)) return null
+  for (var i = 0; i < binds.length; i++) {
+    var b = binds[i]
+    if (String(b.description || "").indexOf("Omadjinn") === 0) continue
+    if (b.modmask === want.mask && String(b.key || "").toLowerCase() === want.key.toLowerCase())
+      return String(b.description || "another binding")
+  }
+  return null
+}

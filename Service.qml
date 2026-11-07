@@ -281,7 +281,7 @@ Item {
   // every config reload, which drops runtime binds.
   readonly property bool menuEnabled: config.features.rightClickMenu === true
   readonly property string menuHook: Qt.resolvedUrl("hypr/right-click.lua").toString().replace("file://", "")
-  onMenuEnabledChanged: loadMenuHook()
+  onMenuEnabledChanged: { loadMenuHook(); loadKeys() }
 
   function loadMenuHook() {
     // The path goes into Lua source, so it must be exactly the safe form checked here.
@@ -294,12 +294,51 @@ Item {
     })
   }
 
-  Component.onCompleted: loadMenuHook()
+  // ── Keys ───────────────────────────────────────────────────────────────────
+  // hypr/keys.lua binds the default keys (see Model.KEY_ACTIONS) or the user's own from
+  // config.json. A key something else already holds is left to it. Calls that arrive
+  // while one is running fold into one more run afterwards.
+  readonly property string keysHook: Qt.resolvedUrl("hypr/keys.lua").toString().replace("file://", "")
+  property bool keysBusy: false
+  property bool keysAgain: false
+  property var blockedKeys: ({})
+
+  function loadKeys() {
+    if (keysBusy) { keysAgain = true; return }
+    keysBusy = true
+    keysAgain = false
+    run(["hyprctl", "-j", "binds"], function(text) {
+      var binds = root.json(text)
+      var wanted = Model.keysFor(root.config, { menu: !root.menuEnabled })
+      var list = [], blocked = ({})
+      for (var i = 0; i < wanted.length; i++) {
+        var holder = Model.keyConflict(binds, wanted[i].key)
+        if (holder) blocked[wanted[i].id] = holder
+        else list.push("{\"" + wanted[i].key + "\",\"" + wanted[i].cmd + "\",\"Omadjinn: " + wanted[i].label + "\"}")
+      }
+      root.blockedKeys = blocked
+      // The path goes into Lua source, so it must be exactly the safe form checked here.
+      if (!/^[A-Za-z0-9_\/.\-]+$/.test(root.keysHook)) {
+        console.warn("omadjinn: refusing to load the keys from", root.keysHook)
+        root.keysBusy = false
+        return
+      }
+      run(["hyprctl", "eval", "omadjinn_keys = { " + list.join(", ") + " } dofile(\"" + root.keysHook + "\")"], function(out) {
+        if (out.trim() !== "ok") console.warn("omadjinn: hyprctl eval said:", out.trim())
+        root.keysBusy = false
+        if (root.keysAgain) root.loadKeys()
+      })
+    })
+  }
+
+  onConfigChanged: loadKeys()
+
+  Component.onCompleted: { loadMenuHook(); loadKeys() }
 
   Connections {
     target: Hyprland
     function onRawEvent(event) {
-      if (event && String(event.name) === "configreloaded") root.loadMenuHook()
+      if (event && String(event.name) === "configreloaded") { root.loadMenuHook(); root.loadKeys() }
     }
   }
 
