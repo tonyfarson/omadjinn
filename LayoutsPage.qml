@@ -170,6 +170,26 @@ Column {
       }
     }
 
+    Row {
+      visible: root.deletedName !== "" && root.service && root.service.undoLayouts !== null
+      spacing: Style.space(10)
+
+      Text {
+        textFormat: Text.PlainText
+        anchors.verticalCenter: parent.verticalCenter
+        text: strings.t("layouts.deleted") + ": " + root.deletedName
+        color: Qt.darker(Commons.Color.foreground, 1.5)
+        font.family: Style.font.family
+        font.pixelSize: Style.font.caption
+      }
+
+      PageLink {
+        anchors.verticalCenter: parent.verticalCenter
+        text: strings.t("layouts.undo")
+        onClicked: { if (root.service) root.service.undoDelete(); root.deletedName = "" }
+      }
+    }
+
     Button {
       text: strings.t("layouts.new")
       bordered: true
@@ -252,26 +272,6 @@ Column {
 
       // The first click only arms the button; it disarms itself after a few seconds.
       Timer { id: armTimer; interval: 5000; onTriggered: root.armed = false }
-    }
-
-    Row {
-      visible: root.deletedName !== "" && root.service && root.service.undoLayouts !== null
-      spacing: Style.space(10)
-
-      Text {
-        textFormat: Text.PlainText
-        anchors.verticalCenter: parent.verticalCenter
-        text: strings.t("layouts.deleted") + ": " + root.deletedName
-        color: Qt.darker(Commons.Color.foreground, 1.5)
-        font.family: Style.font.family
-        font.pixelSize: Style.font.caption
-      }
-
-      PageLink {
-        anchors.verticalCenter: parent.verticalCenter
-        text: strings.t("layouts.undo")
-        onClicked: { if (root.service) root.service.undoDelete(); root.deletedName = "" }
-      }
     }
 
     Text {
