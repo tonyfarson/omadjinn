@@ -16,7 +16,7 @@ Item {
 
   property var service: null
 
-  // "general" is the main page; the others open from its contents list.
+  // "general" is the main page; the others open from the button row.
   property string page: "general"
 
   signal closeRequested()
@@ -82,13 +82,7 @@ Item {
       font.pixelSize: Style.font.caption
     }
 
-    // Other pages: a way back, and the page name.
-    PageLink {
-      visible: root.page !== "general"
-      text: strings.t("help.back")
-      onClicked: root.page = "general"
-    }
-
+    // Other pages: the page name. The button row below is the way back.
     Text {
       visible: root.page !== "general"
       textFormat: Text.PlainText
@@ -112,10 +106,30 @@ Item {
     color: Util.alpha(Commons.Color.foreground, 0.2)
   }
 
+  // ── Pinned page buttons, on every page ─────────────────────────────────────
+  Row {
+    id: tabs
+    anchors.top: rule.bottom
+    anchors.topMargin: Style.space(10)
+    anchors.left: parent.left
+    spacing: Style.space(6)
+
+    Repeater {
+      model: ["general", "keys", "layouts", "about"]
+      Button {
+        required property string modelData
+        text: strings.t("page." + modelData)
+        bordered: true
+        selected: root.page === modelData
+        onClicked: root.page = modelData
+      }
+    }
+  }
+
   // ── Scrolling page area ───────────────────────────────────────────────────
   Flickable {
     id: flick
-    anchors.top: rule.bottom
+    anchors.top: tabs.bottom
     anchors.topMargin: Style.space(10)
     anchors.left: parent.left
     anchors.right: parent.right
@@ -143,11 +157,7 @@ Item {
 
   Component {
     id: generalPage
-    GeneralPage {
-      service: root.service
-      onNavigate: function(page) { root.page = page }
-      onScrollRequested: function(y) { flick.contentY = Math.max(0, Math.min(y, flick.contentHeight - flick.height)) }
-    }
+    GeneralPage { service: root.service }
   }
   Component { id: keysPage; KeysPage { service: root.service } }
   Component { id: layoutsPage; LayoutsPage { service: root.service; onFocusRequested: root.forceActiveFocus() } }

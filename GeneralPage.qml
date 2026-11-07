@@ -3,42 +3,19 @@ import qs.Commons
 import qs.Commons as Commons
 import qs.Ui
 
-// The main page: a contents list, then the feature switches.
+// The main page: the feature switches. The page buttons live in SettingsPanel.
 Column {
   id: root
 
   property var service: null
   readonly property var features: service && service.config && service.config.features ? service.config.features : ({})
 
-  // Where the Features section starts, for the contents link.
-  readonly property real featuresY: featuresHeader.y
-
-  signal navigate(string page)
-  signal scrollRequested(real y)
-
   spacing: Style.space(12)
 
   Commons.Translations { id: strings; directory: Qt.resolvedUrl("i18n") }
 
   PanelSectionHeader {
-    text: strings.t("toc.title")
-  }
-
-  Row {
-    spacing: Style.space(10)
-
-    PageLink { text: strings.t("page.features"); onClicked: root.scrollRequested(root.featuresY) }
-    Text { text: "·"; color: Util.alpha(Commons.Color.foreground, 0.4); font.pixelSize: Style.font.caption }
-    PageLink { text: strings.t("page.keys"); onClicked: root.navigate("keys") }
-    Text { text: "·"; color: Util.alpha(Commons.Color.foreground, 0.4); font.pixelSize: Style.font.caption }
-    PageLink { text: strings.t("page.layouts"); onClicked: root.navigate("layouts") }
-    Text { text: "·"; color: Util.alpha(Commons.Color.foreground, 0.4); font.pixelSize: Style.font.caption }
-    PageLink { text: strings.t("page.about"); onClicked: root.navigate("about") }
-  }
-
-  PanelSectionHeader {
     id: featuresHeader
-    topPadding: Style.space(12)
     text: strings.t("settings.features")
   }
 
