@@ -172,13 +172,36 @@ Column {
     }
   }
 
-  Text {
-    textFormat: Text.PlainText
-    width: parent.width
-    wrapMode: Text.WordWrap
-    text: root.message !== "" ? root.message : strings.t("keys.soon")
-    color: Qt.darker(Commons.Color.foreground, 1.5)
-    font.family: Style.font.family
-    font.pixelSize: Style.font.caption
+  // The message line, with Restore defaults at the right, under the Edit column.
+  Item {
+    width: root.width
+    height: Math.max(messageText.implicitHeight, restoreButton.height)
+
+    Text {
+      id: messageText
+      anchors.left: parent.left
+      anchors.right: restoreButton.left
+      anchors.rightMargin: Style.space(12)
+      anchors.verticalCenter: parent.verticalCenter
+      textFormat: Text.PlainText
+      wrapMode: Text.WordWrap
+      text: root.message !== "" ? root.message : strings.t("keys.soon")
+      color: Qt.darker(Commons.Color.foreground, 1.5)
+      font.family: Style.font.family
+      font.pixelSize: Style.font.caption
+    }
+
+    Button {
+      id: restoreButton
+      anchors.right: parent.right
+      anchors.verticalCenter: parent.verticalCenter
+      text: strings.t("keys.restore")
+      bordered: true
+      onClicked: {
+        if (root.recording) root.stopRecording()
+        if (root.service) root.service.restoreKeys()
+        root.message = strings.t("keys.restored")
+      }
+    }
   }
 }

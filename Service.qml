@@ -322,6 +322,14 @@ Item {
 
   // Saves one action's key to config.json "keys". The default key (or an empty string
   // to switch the action off) is stored only when it differs from the default.
+  // Drops every key override, so all binds are the defaults again.
+  function restoreKeys() {
+    var next = JSON.parse(JSON.stringify(config))
+    delete next.keys
+    config = next
+    configFile.setText(JSON.stringify(next, null, 2) + "\n")
+  }
+
   function setKey(id, text) {
     var next = JSON.parse(JSON.stringify(config))
     if (!next.keys) next.keys = ({})
