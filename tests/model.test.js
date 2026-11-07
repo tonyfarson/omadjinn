@@ -1,6 +1,6 @@
 // Run with: node tests/model.test.js   (Model.js is a QML library; load it as text.)
 const fs = require("fs"), assert = require("assert")
-const M = {}; new Function("exports", fs.readFileSync(__dirname + "/../Model.js", "utf8").replace(".pragma library", "") + "\nObject.assign(exports,{parseGap,zonesFor,pickZone,origSize,nextLayoutIndex,zoneName,KEY_ACTIONS,parseKey,keysFor,keyConflict,layoutProblem,checkLayouts,treeToZones,zonesToTree,splitZone,mergeSplit,moveSplit,splitLines,nodeRect,nodeAt,leafZones,occupants})")(M)
+const M = {}; new Function("exports", fs.readFileSync(__dirname + "/../Model.js", "utf8").replace(".pragma library", "") + "\nObject.assign(exports,{parseGap,zonesFor,pickZone,origSize,nextLayoutIndex,zoneName,KEY_ACTIONS,parseKey,keysFor,keyConflict,layoutProblem,checkLayouts,treeToZones,zonesToTree,splitZone,mergeSplit,moveSplit,splitLines,nodeRect,nodeAt,leafZones,occupants,stackOrder,rotateStack})")(M)
 
 // kijo's monitor: 3840x2160 at scale 1.5, bar reserves 30 at the top.
 const mon = { x: -1280, y: -1440, width: 3840, height: 2160, scale: 1.5, reserved: [0, 30, 0, 0] }
@@ -148,3 +148,14 @@ assert.deepStrictEqual(M.occupants(cl, zoneBox, "self", 1).map(c => c.address), 
 assert.deepStrictEqual(M.occupants([], zoneBox, "self", 1), [])
 assert.deepStrictEqual(M.occupants(null, zoneBox, "self", 1), [])
 console.log("model.test.js: occupants ok")
+
+// stacks
+assert.deepStrictEqual(M.rotateStack(["a", "b", "c"], "next"), ["c", "a", "b"])
+assert.deepStrictEqual(M.rotateStack(["a", "b", "c"], "prev"), ["b", "c", "a"])
+assert.deepStrictEqual(M.rotateStack(["a"], "next"), ["a"])
+assert.deepStrictEqual(M.rotateStack(M.rotateStack(["a", "b", "c"], "next"), "prev"), ["a", "b", "c"])
+const sc = [win("a", [0, 40], [960, 500]), win("b", [0, 40], [960, 500]), win("n", [0, 40], [960, 500], { focusHistoryID: 5 }), win("gone", [900, 40], [960, 500])]
+// "gone" moved away and "zzz" no longer exists, so both drop out; "n" is new and sits at the bottom
+assert.deepStrictEqual(M.stackOrder(sc, zoneBox, ["zzz", "a", "gone", "b"], 1), ["n", "a", "b"])
+assert.deepStrictEqual(M.stackOrder(sc, zoneBox, undefined, 1).sort(), ["a", "b", "n"])
+console.log("model.test.js: stacks ok")

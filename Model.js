@@ -146,6 +146,8 @@ var KEY_ACTIONS = [
   { id: "stackRight", key: "ALT + SHIFT + RIGHT", cmd: "stack right", label: "Stack window right" },
   { id: "stackUp",    key: "ALT + SHIFT + UP",    cmd: "stack up",    label: "Stack window up" },
   { id: "stackDown",  key: "ALT + SHIFT + DOWN",  cmd: "stack down",  label: "Stack window down" },
+  { id: "stackNext",  key: "ALT + grave",         cmd: "stackCycle next", label: "Next window in the stack" },
+  { id: "stackPrev",  key: "ALT + SHIFT + grave", cmd: "stackCycle prev", label: "Previous window in the stack" },
   { id: "menu",       key: "ALT + C",      cmd: "menuFocused",  label: "Menu for the focused window" },
   { id: "layoutPrev", key: "ALT + comma",  cmd: "cycle prev",   label: "Previous layout" },
   { id: "layoutNext", key: "ALT + period", cmd: "cycle next",   label: "Next layout" },
@@ -443,5 +445,32 @@ function occupants(clients, zone, exclude, workspaceId) {
     if (sameBox([c.at[0], c.at[1], c.size[0], c.size[1]], zone)) out.push(c)
   }
   out.sort(function(p, q) { return (p.focusHistoryID || 0) - (q.focusHistoryID || 0) })
+  return out
+}
+
+// The stack at a zone, bottom first: the saved order (windows still there), then any other
+// window sitting in the zone that was not in the saved order (placed at the bottom).
+// `box` is the zone [x, y, w, h]; `saved` is a list of addresses, bottom to top.
+function stackOrder(clients, box, saved, workspaceId) {
+  var here = occupants(clients, box, "", workspaceId)
+  var byAddr = {}
+  for (var i = 0; i < here.length; i++) byAddr[here[i].address] = true
+  var order = [], seen = {}
+  var extra = here.map(function(c) { return c.address }).filter(function(a) { return (saved || []).indexOf(a) < 0 })
+  for (var e = extra.length - 1; e >= 0; e--) { order.push(extra[e]); seen[extra[e]] = true }
+  for (var j = 0; j < (saved || []).length; j++) {
+    if (byAddr[saved[j]] && !seen[saved[j]]) { order.push(saved[j]); seen[saved[j]] = true }
+  }
+  return order
+}
+
+// Step through a stack (a list bottom to top). "next" sends the top window to the bottom,
+// so the one beneath shows; "prev" brings the bottom window to the top. The order of the
+// others is kept.
+function rotateStack(order, dir) {
+  if (!order || order.length < 2) return order || []
+  var out = order.slice()
+  if (dir === "prev") out.push(out.shift())
+  else out.unshift(out.pop())
   return out
 }

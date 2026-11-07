@@ -280,6 +280,38 @@ Item {
     writeStacks(next)
   }
 
+  // Step through the stack of the focused window's zone: "next" sends the top window to the
+  // bottom so the one beneath shows; "prev" brings the bottom one up. Needs two or more.
+  function cycleStack(direction) {
+    if (direction !== "next" && direction !== "prev") return "direction must be next or prev"
+    run(["hyprctl", "-j", "activewindow"], function(t1) {
+      var win = root.json(t1)
+      if (!win || !win.address || !win.floating || win.fullscreen) return
+      run(["hyprctl", "-j", "clients"], function(t2) {
+        var clients = root.json(t2) || []
+        var box = [win.at[0], win.at[1], win.size[0], win.size[1]]
+        var saved = []
+        for (var k in root.stacks) {
+          var parts = k.split(",").map(Number)
+          if (parts.length === 4 && Model.sameBox(parts, box)) { saved = root.stacks[k]; break }
+        }
+        var order = Model.stackOrder(clients, box, saved, win.workspace ? win.workspace.id : -1)
+        if (order.length < 2) return
+        var next = Model.rotateStack(order, direction)
+        // Raise each window in turn, bottom to top, so the last one raised ends up on top.
+        for (var i = 0; i < next.length; i++)
+          Hyprland.dispatch("hl.dsp.window.alter_zorder({ window = 'address:" + next[i] + "', mode = 'top' })")
+        Hyprland.dispatch("hl.dsp.focus({ window = 'address:" + next[next.length - 1] + "' })")
+        var key = box.join(",")
+        var map = ({})
+        for (var s2 in root.stacks) if (s2 !== key) map[s2] = root.stacks[s2]
+        map[key] = next
+        root.writeStacks(map)
+      })
+    })
+    return "ok"
+  }
+
   FileView {
     id: stacksFile
     path: root.stateDir + "/stacks"
@@ -568,6 +600,7 @@ Item {
     function ping(): string { return "pong" }
     function snap(direction: string): string { return root.snap(direction) }
     function stack(direction: string): string { return root.snap(direction, true) }
+    function stackCycle(direction: string): string { return root.cycleStack(direction) }
     function cycle(direction: string): string { return root.cycle(direction) }
     function current(): string { return root.currentId }
     function open(): string { root.settingsOpen = true; return "open" }
