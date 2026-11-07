@@ -3,7 +3,7 @@ import qs.Commons
 import qs.Commons as Commons
 import qs.Ui
 
-// About: what it does and where to find more. Links and the version live in the panel frame.
+// About: a few words from the developer. Links and the version live in the panel frame.
 Column {
   id: root
 
@@ -14,19 +14,17 @@ Column {
   Commons.Translations { id: strings; directory: Qt.resolvedUrl("i18n") }
 
   Repeater {
-    model: ["help.what", "help.settings", "help.more"]
+    model: ["about.bio1", "about.bio2"]
 
     Text {
       required property string modelData
       width: root.width
-      textFormat: Text.StyledText
+      textFormat: Text.PlainText
       wrapMode: Text.WordWrap
       text: strings.t(modelData)
       color: Commons.Color.foreground
-      linkColor: Commons.Color.accent
       font.family: Style.font.family
       font.pixelSize: Style.font.body
-      onLinkActivated: function(link) { Qt.openUrlExternally(link) }
     }
   }
 }

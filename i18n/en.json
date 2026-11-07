@@ -6,12 +6,6 @@
   "feature.dragRestore.label": "Restore size on drag-out",
   "feature.dragRestore.description": "Dragging a snapped window out with SUPER + LEFT MOUSE resizes it to Omarchy's default floating size.",
   "settings.hint": "Esc closes",
-  "help.link": "Questions?",
-  "help.back": "‹ Back to settings",
-  "help.title": "Omadjinn quick start",
-  "help.what": "<b>What it does.</b> Snap a floating window into a zone of the current layout, and cycle between layouts. A toast names the active layout.",
-  "help.settings": "<b>Settings.</b> Each switch turns an optional feature on or off. They are all off until you turn them on. Edit a layout name in its field.",
-  "help.more": "<b>More.</b> Full README: <a href=\"https://github.com/tonyfarson/omadjinn#readme\"><b><u>github.com/tonyfarson/omadjinn</u></b></a>",
   "feature.snapTiled.label": "Snap tiled windows too",
   "feature.snapTiled.description": "Off: snap only moves windows that are already floating. On: snapping a tiled or scrolling window floats it first.",
   "help.suggestions": "Suggestions?",
@@ -59,5 +53,7 @@
   "layouts.restore.row": "Restore layout?",
   "feature.swap.label": "Swap windows while snapping",
   "feature.swap.description": "Off: a snapped window lands on top of the one already in the zone. On: the two trade places, and the other window takes the spot yours came from.",
-  "layouts.openfile.lead": "Prefer a text editor?"
+  "layouts.openfile.lead": "Prefer a text editor?",
+  "about.bio1": "Omadjinn (emphasis on the long d) was built by Tony Farson. A dude playing out his midlife crisis by proving he can learn new tricks. By trade, I am a 25 year career in information technology infrastructure and support, customer success, and now SaaS product and release management. My new passion is building AI solutions with an emphasis on trust, observability, and governance/compliance.",
+  "about.bio2": "I use local and frontier models in all aspects of my professional work and my tinkering projects. I design, drive, test, and QA. I dabble in code but let AI do the heavy lifting. Omadjinn is one such project. I hope you enjoy it."
 }
