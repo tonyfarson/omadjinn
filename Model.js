@@ -232,3 +232,176 @@ function checkLayouts(list) {
   }
   return { ok: ok, problems: problems }
 }
+
+// ── Split-line editor ────────────────────────────────────────────────────────
+// A layout the editor can draw is a tree of splits. A leaf is one zone. A split cuts its
+// rectangle in two: dir "v" cuts with a vertical line (a is the left part, b the right),
+// dir "h" with a horizontal line (a on top, b below); `at` is where, 0 to 1 across the
+// rectangle being cut. A path is a list of 0 (a) and 1 (b) from the root to a node.
+// Layouts that no run of straight cuts can make (overlaps, pinwheels) have no tree; they
+// stay editable in layouts.json.
+
+var MIN_ZONE = 0.05   // smallest zone side, as a fraction of the screen
+var SNAP_STEPS = 12   // split lines snap to twelfths: halves, thirds, quarters and sixths
+
+function leaf() { return { leaf: true } }
+
+function round4(v) { return Math.round(v * 10000) / 10000 }
+
+// The zones [x, y, w, h] of a tree, left to right and top to bottom as the tree is read.
+function treeToZones(node, rect) {
+  rect = rect || [0, 0, 1, 1]
+  if (!node || node.leaf) return [[round4(rect[0]), round4(rect[1]), round4(rect[2]), round4(rect[3])]]
+  var a, b
+  if (node.dir === "v") {
+    var x = rect[0] + node.at * rect[2]
+    a = [rect[0], rect[1], x - rect[0], rect[3]]
+    b = [x, rect[1], rect[0] + rect[2] - x, rect[3]]
+  } else {
+    var y = rect[1] + node.at * rect[3]
+    a = [rect[0], rect[1], rect[2], y - rect[1]]
+    b = [rect[0], y, rect[2], rect[1] + rect[3] - y]
+  }
+  return treeToZones(node.a, a).concat(treeToZones(node.b, b))
+}
+
+function sameZones(p, q) {
+  if (p.length !== q.length) return false
+  var used = {}
+  for (var i = 0; i < p.length; i++) {
+    var found = false
+    for (var j = 0; j < q.length && !found; j++) {
+      if (used[j]) continue
+      var ok = true
+      for (var k = 0; k < 4; k++) if (Math.abs(p[i][k] - q[j][k]) > 0.002) ok = false
+      if (ok) { used[j] = true; found = true }
+    }
+    if (!found) return false
+  }
+  return true
+}
+
+// The tree for a list of zones, or null when the zones are not made by straight cuts
+// across the whole screen (or do not cover it exactly).
+function zonesToTree(zones) {
+  var e = 0.002
+  function build(rects, region) {
+    if (rects.length === 1) return leaf()
+    var dirs = ["v", "h"]
+    for (var d = 0; d < 2; d++) {
+      var vert = dirs[d] === "v"
+      var lo = vert ? 0 : 1, size = vert ? 2 : 3
+      var origin = region[lo], span = region[size]
+      var cands = []
+      for (var i = 0; i < rects.length; i++) {
+        var c = rects[i][lo]
+        if (c > origin + e && c < origin + span - e) cands.push(c)
+      }
+      for (var ci = 0; ci < cands.length; ci++) {
+        var cut = cands[ci], first = [], second = [], ok = true
+        for (var k = 0; k < rects.length; k++) {
+          var r = rects[k]
+          if (r[lo] + r[size] <= cut + e) first.push(r)
+          else if (r[lo] >= cut - e) second.push(r)
+          else { ok = false; break }
+        }
+        if (!ok || first.length === 0 || second.length === 0) continue
+        var regA = region.slice(), regB = region.slice()
+        regA[size] = cut - origin
+        regB[lo] = cut; regB[size] = origin + span - cut
+        var ta = build(first, regA), tb = build(second, regB)
+        if (ta && tb) return { dir: dirs[d], at: round4((cut - origin) / span), a: ta, b: tb }
+      }
+    }
+    return null
+  }
+  if (!Array.isArray(zones) || zones.length === 0) return null
+  var tree = build(zones, [0, 0, 1, 1])
+  if (!tree) return null
+  return sameZones(treeToZones(tree), zones) ? tree : null
+}
+
+function nodeAt(tree, path) {
+  var n = tree
+  for (var i = 0; i < path.length; i++) { if (!n || n.leaf) return null; n = path[i] === 0 ? n.a : n.b }
+  return n
+}
+
+// The screen rectangle a node covers.
+function nodeRect(tree, path) {
+  var rect = [0, 0, 1, 1], n = tree
+  for (var i = 0; i < path.length; i++) {
+    if (!n || n.leaf) return null
+    var x, y
+    if (n.dir === "v") {
+      x = rect[0] + n.at * rect[2]
+      rect = path[i] === 0 ? [rect[0], rect[1], x - rect[0], rect[3]] : [x, rect[1], rect[0] + rect[2] - x, rect[3]]
+    } else {
+      y = rect[1] + n.at * rect[3]
+      rect = path[i] === 0 ? [rect[0], rect[1], rect[2], y - rect[1]] : [rect[0], y, rect[2], rect[1] + rect[3] - y]
+    }
+    n = path[i] === 0 ? n.a : n.b
+  }
+  return rect
+}
+
+function cloneTree(t) { return JSON.parse(JSON.stringify(t)) }
+
+// A copy of the tree with `fn` applied to the node at `path` (fn returns its replacement).
+function changeAt(tree, path, fn) {
+  var out = cloneTree(tree)
+  if (path.length === 0) return fn(out)
+  var parent = nodeAt(out, path.slice(0, -1))
+  if (!parent || parent.leaf) return out
+  var key = path[path.length - 1] === 0 ? "a" : "b"
+  parent[key] = fn(parent[key])
+  return out
+}
+
+// Cut the zone at `path` in two, in the middle. A zone too small to cut is left alone.
+function splitZone(tree, path, dir) {
+  var r = nodeRect(tree, path), n = nodeAt(tree, path)
+  if (!r || !n || !n.leaf) return tree
+  if ((dir === "v" ? r[2] : r[3]) < MIN_ZONE * 2 - 0.0001) return tree
+  return changeAt(tree, path, function() { return { dir: dir, at: 0.5, a: leaf(), b: leaf() } })
+}
+
+// Join everything under the split at `path` back into one zone.
+function mergeSplit(tree, path) {
+  var n = nodeAt(tree, path)
+  if (!n || n.leaf) return tree
+  return changeAt(tree, path, leaf)
+}
+
+// Move a split so its line sits at `coord` (0 to 1 across the whole screen), snapped to
+// twelfths and kept clear of the ends so neither side is thinner than MIN_ZONE.
+function moveSplit(tree, path, coord) {
+  var n = nodeAt(tree, path), r = nodeRect(tree, path)
+  if (!n || n.leaf || !r) return tree
+  var lo = n.dir === "v" ? r[0] : r[1], span = n.dir === "v" ? r[2] : r[3]
+  var snapped = Math.round(coord * SNAP_STEPS) / SNAP_STEPS
+  var abs = Math.max(lo + MIN_ZONE, Math.min(lo + span - MIN_ZONE, snapped))
+  if (lo + span - lo < MIN_ZONE * 2) return tree
+  return changeAt(tree, path, function(node) { node.at = round4((abs - lo) / span); return node })
+}
+
+// Every split line, for drawing and hit tests: its path, direction, and ends in 0 to 1 screen units.
+function splitLines(tree) {
+  var out = []
+  function walk(n, path, rect) {
+    if (!n || n.leaf) return
+    if (n.dir === "v") {
+      var x = rect[0] + n.at * rect[2]
+      out.push({ path: path, dir: "v", x0: x, y0: rect[1], x1: x, y1: rect[1] + rect[3] })
+      walk(n.a, path.concat([0]), [rect[0], rect[1], x - rect[0], rect[3]])
+      walk(n.b, path.concat([1]), [x, rect[1], rect[0] + rect[2] - x, rect[3]])
+    } else {
+      var y = rect[1] + n.at * rect[3]
+      out.push({ path: path, dir: "h", x0: rect[0], y0: y, x1: rect[0] + rect[2], y1: y })
+      walk(n.a, path.concat([0]), [rect[0], rect[1], rect[2], y - rect[1]])
+      walk(n.b, path.concat([1]), [rect[0], y, rect[2], rect[1] + rect[3] - y])
+    }
+  }
+  walk(tree, [], [0, 0, 1, 1])
+  return out
+}

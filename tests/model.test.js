@@ -1,6 +1,6 @@
 // Run with: node tests/model.test.js   (Model.js is a QML library; load it as text.)
 const fs = require("fs"), assert = require("assert")
-const M = {}; new Function("exports", fs.readFileSync(__dirname + "/../Model.js", "utf8").replace(".pragma library", "") + "\nObject.assign(exports,{parseGap,zonesFor,pickZone,origSize,nextLayoutIndex,zoneName,KEY_ACTIONS,parseKey,keysFor,keyConflict,layoutProblem,checkLayouts})")(M)
+const M = {}; new Function("exports", fs.readFileSync(__dirname + "/../Model.js", "utf8").replace(".pragma library", "") + "\nObject.assign(exports,{parseGap,zonesFor,pickZone,origSize,nextLayoutIndex,zoneName,KEY_ACTIONS,parseKey,keysFor,keyConflict,layoutProblem,checkLayouts,treeToZones,zonesToTree,splitZone,mergeSplit,moveSplit,splitLines,nodeRect,nodeAt})")(M)
 
 // kijo's monitor: 3840x2160 at scale 1.5, bar reserves 30 at the top.
 const mon = { x: -1280, y: -1440, width: 3840, height: 2160, scale: 1.5, reserved: [0, 30, 0, 0] }
@@ -97,3 +97,35 @@ const checked = M.checkLayouts([good, { id: "bad", zones: [] }, good])
 assert.strictEqual(checked.ok.length, 1)
 assert.strictEqual(checked.problems.length, 2)
 console.log("model.test.js: layouts ok")
+
+// split-line editor
+const shipped = JSON.parse(fs.readFileSync(__dirname + "/../layouts/default.json", "utf8")).layouts
+for (const l of shipped) {
+  const tree = M.zonesToTree(l.zones)
+  assert.ok(tree, l.id + " has a tree")
+  const back = M.treeToZones(tree)
+  assert.strictEqual(back.length, l.zones.length, l.id)
+  assert.strictEqual(M.layoutProblem({ id: l.id, zones: back }), "", l.id)
+}
+assert.strictEqual(M.zonesToTree([[0, 0, 0.7, 1], [0.5, 0, 0.5, 1]]), null)        // overlap
+assert.strictEqual(M.zonesToTree([[0, 0, 0.5, 1]]), null)                           // does not cover the screen
+assert.strictEqual(M.zonesToTree([[0, 0, 0.5, 0.5], [0.5, 0, 0.5, 0.5], [0, 0.5, 1, 0.5]]) !== null, true)
+// pinwheel: no straight cut across the whole screen
+assert.strictEqual(M.zonesToTree([[0, 0, 0.6, 0.4], [0.6, 0, 0.4, 0.6], [0.4, 0.6, 0.6, 0.4], [0, 0.4, 0.4, 0.6]]), null)
+let t = { leaf: true }
+t = M.splitZone(t, [], "v")
+assert.deepStrictEqual(M.treeToZones(t), [[0, 0, 0.5, 1], [0.5, 0, 0.5, 1]])
+t = M.splitZone(t, [1], "h")
+assert.deepStrictEqual(M.treeToZones(t), [[0, 0, 0.5, 1], [0.5, 0, 0.5, 0.5], [0.5, 0.5, 0.5, 0.5]])
+t = M.moveSplit(t, [], 0.3)                                // snaps to 4/12
+assert.strictEqual(M.nodeAt(t, []).at, 0.3333)
+t = M.moveSplit(t, [], 0.99)                               // kept off the end
+assert.ok(M.nodeAt(t, []).at <= 0.95 + 1e-9)
+t = M.moveSplit(t, [1], 0.5)                               // inner line, across the whole screen coordinate
+assert.strictEqual(M.splitLines(t).length, 2)
+t = M.mergeSplit(t, [1])
+assert.strictEqual(M.treeToZones(t).length, 2)
+// a zone too small to cut stays as it is
+let tiny = { dir: "v", at: 0.05, a: { leaf: true }, b: { leaf: true } }
+assert.strictEqual(M.splitZone(tiny, [0], "v"), tiny)
+console.log("model.test.js: editor ok")
