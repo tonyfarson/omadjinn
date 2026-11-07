@@ -29,7 +29,7 @@ esac
 
 id=$(jq -r ".layouts[$idx].id" "$file")
 name=$(jq -r ".layouts[$idx].name // .layouts[$idx].id" "$file")
-icon=$(jq -r ".layouts[$idx].icon // empty" "$file")
+icon=$(jq -r ".layouts[$idx].icon // \"\uebeb\"" "$file")
 
 mkdir -p "$state_dir"
 printf '%s\n' "$id" > "$state"

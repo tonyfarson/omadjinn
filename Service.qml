@@ -75,7 +75,7 @@ Item {
     currentId = layout.id
     currentFile.setText(layout.id + "\n")
     var args = ["omarchy", "osd"]
-    if (layout.icon) args = args.concat(["-i", String(layout.icon)])
+    args = args.concat(["-i", String(layout.icon || "\uebeb")])
     args = args.concat(["-m", String(layout.name || layout.id), "-d", "1500"])
     Quickshell.execDetached(args)
     return layout.id
@@ -280,6 +280,12 @@ Item {
     id: openFileTimer
     interval: 400
     onTriggered: Quickshell.execDetached(["xdg-open", root.userLayoutsPath])
+  }
+
+  function setLayoutIcon(id, icon) {
+    var list = JSON.parse(JSON.stringify(layouts))
+    for (var i = 0; i < list.length; i++) if (list[i].id === id) list[i].icon = icon
+    saveLayouts(list)
   }
 
   function renameLayout(id, name) {
