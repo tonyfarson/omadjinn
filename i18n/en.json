@@ -30,7 +30,7 @@
   "keys.description": "Description",
   "keys.bind": "Bind",
   "edit": "Edit",
-  "layouts.openfile": "Prefer a text editor? Open the JSON!",
+  "layouts.openfile": "Open the JSON!",
   "keys.recording": "Press the new keys…",
   "keys.cancel": "Cancel",
   "keys.needmod": "Include SUPER, CTRL, SHIFT or ALT with the key.",
@@ -58,5 +58,6 @@
   "layouts.delete.tip": "Delete this layout",
   "layouts.restore.row": "Restore layout?",
   "feature.swap.label": "Swap windows while snapping",
-  "feature.swap.description": "Off: a snapped window lands on top of the one already in the zone. On: the two trade places, and the other window takes the spot yours came from."
+  "feature.swap.description": "Off: a snapped window lands on top of the one already in the zone. On: the two trade places, and the other window takes the spot yours came from.",
+  "layouts.openfile.lead": "Prefer a text editor?"
 }

@@ -209,10 +209,37 @@ Column {
       }
     }
 
-    Button {
-      text: strings.t("layouts.new")
-      bordered: true
-      onClicked: root.editorFor = "new"
+    // New layout on the left, Restore defaults on the right.
+    Item {
+      width: root.width
+      height: Math.max(newButton.height, restoreButton.height)
+
+      Button {
+        id: newButton
+        anchors.left: parent.left
+        anchors.verticalCenter: parent.verticalCenter
+        text: strings.t("layouts.new")
+        bordered: true
+        onClicked: root.editorFor = "new"
+      }
+
+      Button {
+        id: restoreButton
+        anchors.right: parent.right
+        anchors.verticalCenter: parent.verticalCenter
+        text: root.armed ? strings.t("layouts.restore.confirm") : strings.t("layouts.restore")
+        bordered: true
+        onClicked: {
+          if (!root.armed) { root.armed = true; armTimer.restart(); return }
+          root.armed = false
+          if (root.service) root.service.restoreLayouts(function(name) {
+            root.note = name === "" ? strings.t("layouts.restored.none") : strings.t("layouts.restored") + " " + name
+          })
+        }
+      }
+
+      // The first click only arms the button; it disarms itself after a few seconds.
+      Timer { id: armTimer; interval: 5000; onTriggered: root.armed = false }
     }
 
     // Layouts left out because their zones are wrong.
@@ -247,35 +274,22 @@ Column {
       }
     }
 
-    Item {
-      width: root.width
-      height: Math.max(openLink.implicitHeight, restoreButton.height)
+    // Plain text, then a link in the accent colour.
+    Row {
+      spacing: Style.space(6)
+
+      Text {
+        textFormat: Text.PlainText
+        text: strings.t("layouts.openfile.lead")
+        color: Qt.darker(Commons.Color.foreground, 1.5)
+        font.family: Style.font.family
+        font.pixelSize: Style.font.caption
+      }
 
       PageLink {
-        id: openLink
-        anchors.left: parent.left
-        anchors.verticalCenter: parent.verticalCenter
         text: strings.t("layouts.openfile")
         onClicked: if (root.service) root.service.openLayoutsFile()
       }
-
-      Button {
-        id: restoreButton
-        anchors.right: parent.right
-        anchors.verticalCenter: parent.verticalCenter
-        text: root.armed ? strings.t("layouts.restore.confirm") : strings.t("layouts.restore")
-        bordered: true
-        onClicked: {
-          if (!root.armed) { root.armed = true; armTimer.restart(); return }
-          root.armed = false
-          if (root.service) root.service.restoreLayouts(function(name) {
-            root.note = name === "" ? strings.t("layouts.restored.none") : strings.t("layouts.restored") + " " + name
-          })
-        }
-      }
-
-      // The first click only arms the button; it disarms itself after a few seconds.
-      Timer { id: armTimer; interval: 5000; onTriggered: root.armed = false }
     }
 
     Text {
