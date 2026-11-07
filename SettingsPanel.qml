@@ -7,7 +7,7 @@ import qs.Ui
 
 // The omadjinn settings, drawn inside the bar popup (BarWidget.qml).
 //
-// A fixed-size frame: a pinned header (the title, or "‹ Back" and the page name) over one
+// A fixed-size frame: a pinned header (the title and subtitle) over one
 // scrolling area that shows the current page. The popup never resizes with the page.
 // Pages are separate files (GeneralPage, KeysPage, LayoutsPage, AboutPage) and talk to
 // the engine, Service.qml, directly through `service`.
@@ -59,9 +59,8 @@ Item {
     width: parent.width - watermark.width - Style.space(12)
     spacing: Style.space(6)
 
-    // Main page: the product name and what it does.
+    // The product name and what it does, on every page.
     Text {
-      visible: root.page === "general"
       textFormat: Text.PlainText
       width: parent.width
       text: strings.t("settings.title")
@@ -73,25 +72,12 @@ Item {
     }
 
     Text {
-      visible: root.page === "general"
       textFormat: Text.PlainText
       width: parent.width
       text: strings.t("settings.subtitle")
       color: Qt.darker(Commons.Color.foreground, 1.5)
       font.family: Style.font.family
       font.pixelSize: Style.font.caption
-    }
-
-    // Other pages: the page name. The button row below is the way back.
-    Text {
-      visible: root.page !== "general"
-      textFormat: Text.PlainText
-      width: parent.width
-      text: strings.t("page." + root.page)
-      color: Commons.Color.foreground
-      font.family: Style.font.family
-      font.pixelSize: Style.font.title
-      font.bold: true
     }
   }
 
@@ -121,6 +107,7 @@ Item {
         text: strings.t("page." + modelData)
         bordered: true
         selected: root.page === modelData
+        foreground: selected ? Commons.Color.accent : Commons.Color.foreground
         onClicked: root.page = modelData
       }
     }

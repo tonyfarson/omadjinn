@@ -16,10 +16,6 @@ Column {
 
   Commons.Translations { id: strings; directory: Qt.resolvedUrl("i18n") }
 
-  PanelSectionHeader {
-    text: strings.t("settings.layouts")
-  }
-
   Repeater {
     model: root.layouts
 

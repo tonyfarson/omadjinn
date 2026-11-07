@@ -15,10 +15,6 @@ Column {
 
   Commons.Translations { id: strings; directory: Qt.resolvedUrl("i18n") }
 
-  PanelSectionHeader {
-    text: strings.t("page.keys")
-  }
-
   // Column headings. The edit column has none.
   Row {
     width: root.width
