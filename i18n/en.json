@@ -42,5 +42,8 @@
   "keys.restore": "Restore defaults",
   "keys.restored": "Default keys restored",
   "help.bugs": "Bugs?",
-  "save": "Save"
+  "save": "Save",
+  "layouts.problems": "Left out of your layouts.json:",
+  "layouts.restore": "Restore defaults",
+  "layouts.restored": "Built-in layouts restored. Your file was kept as layouts.backup.json."
 }

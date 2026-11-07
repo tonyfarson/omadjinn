@@ -26,8 +26,19 @@ Item {
   readonly property var layouts: userLayouts.length > 0 ? userLayouts : bundledLayouts
   property string currentId: ""
 
+  // Layouts that can't be used (bad zones, no id) are left out; the reasons go in
+  // layoutProblems, shown on the Layouts page.
+  property var layoutProblems: []
+  property string layoutsNote: ""
+
   function parseLayouts(text) {
     try { var d = JSON.parse(text); return Array.isArray(d.layouts) ? d.layouts : [] } catch (e) { return [] }
+  }
+
+  function loadUserLayouts(text) {
+    var r = Model.checkLayouts(parseLayouts(text))
+    layoutProblems = r.problems
+    userLayouts = r.ok
   }
 
   FileView {
@@ -36,8 +47,8 @@ Item {
     watchChanges: true
     printErrors: false
     onFileChanged: reload()
-    onLoaded: root.userLayouts = root.parseLayouts(text())
-    onLoadFailed: root.userLayouts = []
+    onLoaded: root.loadUserLayouts(text())
+    onLoadFailed: { root.userLayouts = []; root.layoutProblems = [] }
   }
 
   FileView {
@@ -280,6 +291,15 @@ Item {
     id: openFileTimer
     interval: 400
     onTriggered: Quickshell.execDetached(["xdg-open", root.userLayoutsPath])
+  }
+
+  // Puts the built-in layouts back. The user's file is kept as layouts.backup.json
+  // next to it (an older backup is replaced).
+  function restoreLayouts() {
+    run(["mv", "-f", userLayoutsPath, userLayoutsPath.replace(/layouts\.json$/, "layouts.backup.json")], function() {
+      root.userLayouts = []
+      root.layoutProblems = []
+    })
   }
 
   function setLayoutIcon(id, icon) {

@@ -202,3 +202,33 @@ function keyConflict(binds, text) {
   }
   return null
 }
+
+// Why a layout can't be used, or "" when it is fine. A layout needs an id and a list of
+// zones; each zone is [x, y, w, h] as fractions of the screen, inside 0 to 1, with a size.
+function layoutProblem(layout) {
+  if (!layout || typeof layout !== "object") return "not a layout"
+  var id = (typeof layout.id === "string" && layout.id !== "") ? layout.id : "(no id)"
+  if (id === "(no id)") return id + ": needs an id"
+  if (!Array.isArray(layout.zones) || layout.zones.length === 0) return id + ": needs a list of zones"
+  var e = 0.001
+  for (var i = 0; i < layout.zones.length; i++) {
+    var z = layout.zones[i], n = "zone " + (i + 1)
+    if (!Array.isArray(z) || z.length !== 4) return id + ": " + n + " needs four numbers [x, y, w, h]"
+    for (var j = 0; j < 4; j++) if (typeof z[j] !== "number" || !isFinite(z[j])) return id + ": " + n + " has a value that is not a number"
+    if (z[0] < -e || z[1] < -e) return id + ": " + n + " starts off the screen"
+    if (z[2] <= 0 || z[3] <= 0) return id + ": " + n + " has no size"
+    if (z[0] + z[2] > 1 + e || z[1] + z[3] > 1 + e) return id + ": " + n + " runs past the edge of the screen"
+  }
+  return ""
+}
+
+// Splits a list of layouts into the usable ones and the problems found (one line each).
+function checkLayouts(list) {
+  var ok = [], problems = [], seen = {}
+  for (var i = 0; i < list.length; i++) {
+    var p = layoutProblem(list[i])
+    if (p === "" && seen[list[i].id]) p = list[i].id + ": the id is used twice"
+    if (p === "") { ok.push(list[i]); seen[list[i].id] = true } else problems.push(p)
+  }
+  return { ok: ok, problems: problems }
+}

@@ -9,6 +9,8 @@ Column {
 
   property var service: null
   readonly property var layouts: service ? service.layouts : []
+  readonly property var problems: service ? service.layoutProblems : []
+  property string note: ""
 
   // Shown when a layout has no glyph, and the choices offered when editing one.
   readonly property string defaultIcon: "\uebeb"
@@ -135,8 +137,68 @@ Column {
     font.pixelSize: Style.font.caption
   }
 
-  PageLink {
-    text: strings.t("layouts.openfile")
-    onClicked: if (root.service) root.service.openLayoutsFile()
+  // Layouts left out because their zones are wrong.
+  Column {
+    visible: root.problems.length > 0
+    width: parent.width
+    spacing: Style.space(4)
+
+    Text {
+      textFormat: Text.PlainText
+      width: parent.width
+      wrapMode: Text.WordWrap
+      text: "! " + strings.t("layouts.problems")
+      color: Commons.Color.foreground
+      font.family: Style.font.family
+      font.pixelSize: Style.font.caption
+      font.bold: true
+    }
+
+    Repeater {
+      model: root.problems
+      Text {
+        required property string modelData
+        textFormat: Text.PlainText
+        width: root.width
+        wrapMode: Text.WordWrap
+        text: modelData
+        color: Qt.darker(Commons.Color.foreground, 1.3)
+        font.family: Style.font.family
+        font.pixelSize: Style.font.caption
+      }
+    }
+  }
+
+  Item {
+    width: root.width
+    height: Math.max(openLink.implicitHeight, restoreButton.height)
+
+    PageLink {
+      id: openLink
+      anchors.left: parent.left
+      anchors.verticalCenter: parent.verticalCenter
+      text: strings.t("layouts.openfile")
+      onClicked: if (root.service) root.service.openLayoutsFile()
+    }
+
+    Button {
+      id: restoreButton
+      anchors.right: parent.right
+      anchors.verticalCenter: parent.verticalCenter
+      text: strings.t("layouts.restore")
+      bordered: true
+      onClicked: if (root.service) { root.service.restoreLayouts(); root.note = strings.t("layouts.restored") }
+    }
+  }
+
+  Text {
+    visible: root.note !== ""
+    textFormat: Text.PlainText
+    width: parent.width
+    wrapMode: Text.WordWrap
+    text: root.note
+    color: Qt.darker(Commons.Color.foreground, 1.5)
+    font.family: Style.font.family
+    font.pixelSize: Style.font.caption
   }
 }

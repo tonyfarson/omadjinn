@@ -1,6 +1,6 @@
 // Run with: node tests/model.test.js   (Model.js is a QML library; load it as text.)
 const fs = require("fs"), assert = require("assert")
-const M = {}; new Function("exports", fs.readFileSync(__dirname + "/../Model.js", "utf8").replace(".pragma library", "") + "\nObject.assign(exports,{parseGap,zonesFor,pickZone,origSize,nextLayoutIndex,zoneName,KEY_ACTIONS,parseKey,keysFor,keyConflict})")(M)
+const M = {}; new Function("exports", fs.readFileSync(__dirname + "/../Model.js", "utf8").replace(".pragma library", "") + "\nObject.assign(exports,{parseGap,zonesFor,pickZone,origSize,nextLayoutIndex,zoneName,KEY_ACTIONS,parseKey,keysFor,keyConflict,layoutProblem,checkLayouts})")(M)
 
 // kijo's monitor: 3840x2160 at scale 1.5, bar reserves 30 at the top.
 const mon = { x: -1280, y: -1440, width: 3840, height: 2160, scale: 1.5, reserved: [0, 30, 0, 0] }
@@ -80,3 +80,20 @@ assert.strictEqual(M.keyConflict(null, "ALT + S"), null)
 // a user's own bind that merely mentions Omadjinn still counts as a conflict
 assert.strictEqual(M.keyConflict([{ modmask: 8, key: "C", description: "Omadjinn menu for the focused window" }], "ALT + C"), "Omadjinn menu for the focused window")
 console.log("model.test.js: keys ok")
+
+// layout checks
+const good = { id: "thirds", zones: [[0, 0, 0.3333, 1], [0.3333, 0, 0.3333, 1], [0.6667, 0, 0.3333, 1]] }
+assert.strictEqual(M.layoutProblem(good), "")
+assert.match(M.layoutProblem({ zones: [[0, 0, 1, 1]] }), /needs an id/)
+assert.match(M.layoutProblem({ id: "a" }), /list of zones/)
+assert.match(M.layoutProblem({ id: "a", zones: [] }), /list of zones/)
+assert.match(M.layoutProblem({ id: "a", zones: [[0, 0]] }), /four numbers/)
+assert.match(M.layoutProblem({ id: "a", zones: [[0, 0, "x", 1]] }), /not a number/)
+assert.match(M.layoutProblem({ id: "a", zones: [[-0.5, 0, 0.5, 1]] }), /off the screen/)
+assert.match(M.layoutProblem({ id: "a", zones: [[0, 0, 0, 1]] }), /no size/)
+assert.match(M.layoutProblem({ id: "a", zones: [[0, 0, 2, 1]] }), /past the edge/)
+assert.match(M.layoutProblem(null), /not a layout/)
+const checked = M.checkLayouts([good, { id: "bad", zones: [] }, good])
+assert.strictEqual(checked.ok.length, 1)
+assert.strictEqual(checked.problems.length, 2)
+console.log("model.test.js: layouts ok")
