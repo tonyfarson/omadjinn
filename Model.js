@@ -189,13 +189,14 @@ function keysFor(config, skip) {
 }
 
 // What already holds this key in Hyprland's live bind list (`hyprctl -j binds`), or null.
-// Binds whose description starts with "Omadjinn" are ours and do not count.
+// Binds whose description starts with "Omadjinn: " are ours and do not count; a user's own
+// bind for the same key does, even if its description mentions Omadjinn.
 function keyConflict(binds, text) {
   var want = parseKey(text)
   if (!want || !Array.isArray(binds)) return null
   for (var i = 0; i < binds.length; i++) {
     var b = binds[i]
-    if (String(b.description || "").indexOf("Omadjinn") === 0) continue
+    if (String(b.description || "").indexOf("Omadjinn: ") === 0) continue
     if (b.modmask === want.mask && String(b.key || "").toLowerCase() === want.key.toLowerCase())
       return String(b.description || "another binding")
   }

@@ -77,4 +77,6 @@ assert.strictEqual(M.keyConflict(binds, "SUPER + C"), "Universal copy")
 assert.strictEqual(M.keyConflict(binds, "ALT + LEFT"), null)
 assert.strictEqual(M.keyConflict(binds, "ALT + S"), null)
 assert.strictEqual(M.keyConflict(null, "ALT + S"), null)
+// a user's own bind that merely mentions Omadjinn still counts as a conflict
+assert.strictEqual(M.keyConflict([{ modmask: 8, key: "C", description: "Omadjinn menu for the focused window" }], "ALT + C"), "Omadjinn menu for the focused window")
 console.log("model.test.js: keys ok")
