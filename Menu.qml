@@ -19,6 +19,8 @@ Item {
   property string address: ""
   property real cursorX: 0
   property real cursorY: 0
+  // The row the keyboard or mouse is on; -1 means none yet.
+  property int selected: -1
 
   // The shell fills this in with the plugin's service when it loads the overlay.
   property var service: null
@@ -42,6 +44,7 @@ Item {
     root.address = String(p.address || "")
     root.cursorX = Number(p.x) || 0
     root.cursorY = Number(p.y) || 0
+    root.selected = -1
     root.opened = true
     Qt.callLater(function() { keys.forceActiveFocus() })
   }
@@ -94,7 +97,28 @@ Item {
         anchors.fill: parent
         focus: true
         Keys.priority: Keys.BeforeItem
-        Keys.onEscapePressed: root.dismiss()
+        Keys.onPressed: function(event) {
+          var n = root.zones.length
+          if (event.key === Qt.Key_Escape) {
+            root.dismiss()
+          } else if (event.key === Qt.Key_Down || event.key === Qt.Key_Tab || event.key === Qt.Key_J) {
+            root.selected = n > 0 ? (root.selected + 1) % n : -1
+          } else if (event.key === Qt.Key_Up || event.key === Qt.Key_Backtab || event.key === Qt.Key_K) {
+            root.selected = n > 0 ? (root.selected <= 0 ? n - 1 : root.selected - 1) : -1
+          } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+            if (root.selected >= 0 && root.selected < n) root.choose(root.selected)
+          } else if (event.key === Qt.Key_Left || event.key === Qt.Key_H) {
+            if (root.service) root.service.cycle("prev")
+          } else if (event.key === Qt.Key_Right || event.key === Qt.Key_L) {
+            if (root.service) root.service.cycle("next")
+          } else if (event.key >= Qt.Key_1 && event.key <= Qt.Key_9) {
+            var index = event.key - Qt.Key_1
+            if (index < n) root.choose(index)
+          } else {
+            return
+          }
+          event.accepted = true
+        }
       }
 
       Column {
@@ -126,7 +150,7 @@ Item {
             width: column.width
             height: root.rowHeight
             radius: Style.cornerRadius / 2
-            color: rowArea.containsMouse ? root.hoverFill : "transparent"
+            color: root.selected === row.index ? root.hoverFill : "transparent"
 
             // A tiny screen with this row's zone lit up.
             Rectangle {
@@ -154,7 +178,7 @@ Item {
               textFormat: Text.PlainText
               anchors.left: mini.right
               anchors.leftMargin: Style.space(10)
-              anchors.right: parent.right
+              anchors.right: keyHint.left
               anchors.verticalCenter: parent.verticalCenter
               text: Model.zoneName(row.modelData)
               color: root.text
@@ -163,11 +187,26 @@ Item {
               elide: Text.ElideRight
             }
 
+            // The number key that picks this row.
+            Text {
+              id: keyHint
+              textFormat: Text.PlainText
+              anchors.right: parent.right
+              anchors.rightMargin: Style.space(10)
+              anchors.verticalCenter: parent.verticalCenter
+              visible: row.index < 9
+              text: String(row.index + 1)
+              color: Util.alpha(root.text, 0.45)
+              font.family: Style.font.family
+              font.pixelSize: Style.font.caption
+            }
+
             MouseArea {
               id: rowArea
               anchors.fill: parent
               hoverEnabled: true
               cursorShape: Qt.PointingHandCursor
+              onEntered: root.selected = row.index
               onClicked: root.choose(row.index)
             }
           }
