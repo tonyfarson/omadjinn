@@ -215,21 +215,6 @@ Column {
       onClicked: root.editorFor = "new"
     }
 
-    PanelSectionHeader {
-      topPadding: Style.space(12)
-      text: strings.t("layouts.custom")
-    }
-
-    Text {
-      textFormat: Text.PlainText
-      width: parent.width
-      wrapMode: Text.WordWrap
-      text: strings.t("layouts.custom.soon")
-      color: Qt.darker(Commons.Color.foreground, 1.5)
-      font.family: Style.font.family
-      font.pixelSize: Style.font.caption
-    }
-
     // Layouts left out because their zones are wrong.
     Column {
       visible: root.problems.length > 0
