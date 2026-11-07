@@ -46,7 +46,7 @@ Column {
 
   // Shown when a layout has no glyph, and the choices offered when editing one.
   readonly property string defaultIcon: "\uebeb"
-  readonly property var glyphs: ["\ueb56", "\ueb57", "\uf009", "\uebeb", "\uebec", "\uebed", "\uebee",
+  readonly property var glyphs: ["\ueab9", "\ueb56", "\ueb57", "\uf009", "\uebeb", "\uebec", "\uebed", "\uebee",
     "\uebf1", "\uebf2", "\uebf3", "\uebf4", "\uebf5", "\uebf7", "\uec00", "\uec01", "\uec02"]
 
   signal focusRequested()
