@@ -102,13 +102,28 @@ Item {
 
     Repeater {
       model: ["general", "keys", "layouts", "about"]
-      Button {
+      // The current page gets a pill in the theme's accent colour behind its button;
+      // the button's own selected look is a grey that ignores the accent.
+      Item {
         required property string modelData
-        text: strings.t("page." + modelData)
-        bordered: true
-        selected: root.page === modelData
-        foreground: selected ? Commons.Color.accent : Commons.Color.foreground
-        onClicked: root.page = modelData
+        readonly property bool current: root.page === modelData
+        width: tabButton.width
+        height: tabButton.height
+
+        Rectangle {
+          anchors.fill: parent
+          radius: Style.cornerRadius
+          color: Commons.Color.accent
+          visible: parent.current
+        }
+
+        Button {
+          id: tabButton
+          text: strings.t("page." + parent.modelData)
+          bordered: true
+          foreground: parent.current ? Commons.Color.background : Commons.Color.foreground
+          onClicked: root.page = parent.modelData
+        }
       }
     }
   }
