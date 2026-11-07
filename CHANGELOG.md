@@ -17,6 +17,10 @@ First release.
     Omarchy's default floating size.
   - `snapTiled`: snapping also floats tiled and scrolling windows.
 - The popup follows the system font and theme colors, and closes with Esc or a click outside.
+- Right-click menu, a switch that is off by default: right-click a floating window's titlebar to pick
+  a zone of the current layout or change the layout. Keyboard control (arrows, Enter, number keys,
+  Esc), theme colors only, and a `menuFocused` command to open it on the focused window from a key.
+- Snapping now focuses the window and raises it to the top.
 
 ### Notes
 - Omadjinn ships with no keybindings. See "About Keybindings" in the README.

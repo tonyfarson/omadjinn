@@ -20,6 +20,7 @@ o.bind("ALT + DOWN",  "Snap window down",  "omarchy-shell omadjinn snap down")
 o.bind("SUPER + ALT + RIGHT", "Next window layout",     "omarchy-shell omadjinn cycle next")
 o.bind("SUPER + ALT + LEFT",  "Previous window layout", "omarchy-shell omadjinn cycle prev")
 o.bind("SUPER + ALT + UP",    "Omadjinn settings",      "omarchy-shell omadjinn toggle")
+o.bind("ALT + C", "Omadjinn menu", "omarchy-shell omadjinn menuFocused")
 ```
 
 Those keys are only an example. Check that a key is free first (`omarchy menu keybindings --print`).
@@ -67,6 +68,13 @@ out any Omadjinn binds you added to `~/.config/hypr/bindings.lua`.
   Only floating windows are snapped, unless the `snapTiled` switch is on (then a tiled or scrolling window is floated first).
 - Cycle (`cycle next|prev`) changes layout; a toast names the active one.
 - A click on the genie icon in the bar opens the settings popup (`toggle` does the same from a key).
+- The right-click menu (off until you turn on "Right-click menu on titlebars" in the settings popup):
+  right-click a floating window's titlebar and a small menu opens at the pointer. It lists the zones of
+  the current layout, with a mini screen beside each name. Click a zone, press its number, or use the
+  arrow keys and Enter, and the window snaps there and comes to the front. The last row shows the
+  layout, with arrows to change it. `Esc` or a click outside closes the menu. It follows your Omarchy
+  theme. `menuFocused` opens the same menu on the focused window from a key. It needs Omarchy's floating
+  workspace, which draws the titlebars.
 - Bind the keys yourself (see About Keybindings).
 
 ## Layout
