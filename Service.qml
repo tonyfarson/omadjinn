@@ -315,6 +315,23 @@ Item {
   property bool keysBusy: false
   property bool keysAgain: false
   property var blockedKeys: ({})
+  // While the panel records a new bind, our own binds are lifted so Hyprland does not
+  // swallow the keys being pressed.
+  property bool keysSuspended: false
+  onKeysSuspendedChanged: loadKeys()
+
+  // Saves one action's key to config.json "keys". The default key (or an empty string
+  // to switch the action off) is stored only when it differs from the default.
+  function setKey(id, text) {
+    var next = JSON.parse(JSON.stringify(config))
+    if (!next.keys) next.keys = ({})
+    var def = ""
+    for (var i = 0; i < Model.KEY_ACTIONS.length; i++) if (Model.KEY_ACTIONS[i].id === id) def = Model.KEY_ACTIONS[i].key
+    if (text === def) delete next.keys[id]; else next.keys[id] = text
+    if (Object.keys(next.keys).length === 0) delete next.keys
+    config = next
+    configFile.setText(JSON.stringify(next, null, 2) + "\n")
+  }
 
   function loadKeys() {
     if (keysBusy) { keysAgain = true; return }
@@ -322,7 +339,7 @@ Item {
     keysAgain = false
     run(["hyprctl", "-j", "binds"], function(text) {
       var binds = root.json(text)
-      var wanted = Model.keysFor(root.config, { menu: !root.menuEnabled })
+      var wanted = root.keysSuspended ? [] : Model.keysFor(root.config, { menu: !root.menuEnabled })
       var list = [], blocked = ({})
       for (var i = 0; i < wanted.length; i++) {
         var holder = Model.keyConflict(binds, wanted[i].key)

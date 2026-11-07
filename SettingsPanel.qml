@@ -161,7 +161,7 @@ Item {
     id: generalPage
     GeneralPage { service: root.service }
   }
-  Component { id: keysPage; KeysPage { service: root.service } }
+  Component { id: keysPage; KeysPage { service: root.service; onFocusRequested: root.forceActiveFocus() } }
   Component { id: layoutsPage; LayoutsPage { service: root.service; onFocusRequested: root.forceActiveFocus() } }
   Component { id: aboutPage; AboutPage { service: root.service } }
 

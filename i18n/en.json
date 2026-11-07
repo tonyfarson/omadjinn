@@ -27,7 +27,7 @@
   "page.layouts": "Layouts",
   "page.about": "About",
   "page.general": "General",
-  "keys.soon": "Changing a bind is coming. Edit is a placeholder for now.",
+  "keys.soon": "Click Edit, then press the new keys. Esc cancels.",
   "layouts.custom": "Custom layouts",
   "layouts.custom.soon": "A layout editor is planned. Until then you can add layouts by editing the file.",
   "about.version": "Version",
@@ -36,5 +36,11 @@
   "keys.description": "Description",
   "keys.bind": "Bind",
   "edit": "Edit",
-  "layouts.openfile": "Open layouts.json in your text editor"
+  "layouts.openfile": "Open layouts.json in your text editor",
+  "keys.recording": "Press the new keys…",
+  "keys.cancel": "Cancel",
+  "keys.needmod": "Include SUPER, CTRL, SHIFT or ALT with the key.",
+  "keys.taken": "is already used by",
+  "keys.saved": "Saved",
+  "keys.unknown": "That key can't be used."
 }
