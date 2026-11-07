@@ -16,5 +16,9 @@
   "feature.snapTiled.label": "Snap tiled windows too",
   "feature.snapTiled.description": "Off: snap only moves windows that are already floating. On: snapping a tiled or scrolling window floats it first.",
   "help.suggestions": "Suggestions?",
-  "help.coffee": "Buy me a coffee"
+  "help.coffee": "Buy me a coffee",
+  "feature.rightClickMenu.label": "Right-click menu on titlebars",
+  "feature.rightClickMenu.description": "Right-click a floating window's titlebar to pick a zone or change the layout. Needs Omarchy's floating workspace, which draws the titlebars.",
+  "menu.title": "OMADJINN",
+  "menu.layout": "Layout"
 }

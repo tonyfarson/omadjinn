@@ -22,6 +22,8 @@ Item {
 
   // The shell fills this in with the plugin's service when it loads the overlay.
   property var service: null
+  Commons.Translations { id: strings; directory: Qt.resolvedUrl("i18n") }
+
   readonly property var layout: service ? service.layoutById(service.currentId) : null
   readonly property var zones: layout && layout.zones ? layout.zones : []
 
@@ -106,7 +108,7 @@ Item {
           textFormat: Text.PlainText
           width: parent.width
           bottomPadding: Style.space(6)
-          text: "OMADJINN  ·  " + (root.layout ? String(root.layout.name || root.layout.id).toUpperCase() : "")
+          text: strings.t("menu.title") + "  ·  " + (root.layout ? String(root.layout.name || root.layout.id).toUpperCase() : "")
           color: root.accent
           font.family: Style.font.family
           font.pixelSize: Style.font.caption
@@ -188,7 +190,7 @@ Item {
             anchors.leftMargin: Style.space(8)
             anchors.right: prevArrow.left
             anchors.verticalCenter: parent.verticalCenter
-            text: "Layout: " + (root.layout ? String(root.layout.name || root.layout.id) : "")
+            text: strings.t("menu.layout") + ": " + (root.layout ? String(root.layout.name || root.layout.id) : "")
             color: Util.alpha(root.text, 0.8)
             font.family: Style.font.family
             font.pixelSize: Style.font.body

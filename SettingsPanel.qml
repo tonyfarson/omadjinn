@@ -104,6 +104,14 @@ Item {
       onClicked: root.featureToggled("snapTiled", !checked)
     }
 
+    Toggle {
+      width: parent.width
+      label: strings.t("feature.rightClickMenu.label")
+      description: strings.t("feature.rightClickMenu.description")
+      checked: root.features.rightClickMenu === true
+      onClicked: root.featureToggled("rightClickMenu", !checked)
+    }
+
     PanelSectionHeader {
       text: strings.t("settings.layouts")
     }
