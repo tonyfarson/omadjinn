@@ -165,6 +165,28 @@ Item {
   Component { id: layoutsPage; LayoutsPage { service: root.service; onFocusRequested: root.forceActiveFocus() } }
   Component { id: aboutPage; AboutPage { service: root.service } }
 
+  // ── Panel height ───────────────────────────────────────────────────────────
+  // The popup is as tall as the tallest of the fixed pages (General, Keybinds, About), so
+  // the About page fits without scrolling and the size never changes between pages. The
+  // Layouts page grows with the number of layouts, so it scrolls instead. Each page is
+  // built once, hidden, only to measure it.
+  readonly property real preferredHeight: tabs.y + tabs.height + Style.space(10)
+    + Math.max(measure.general, measure.keys, measure.about) + Style.space(8) + footer.height
+
+  Item {
+    id: measure
+    visible: false
+    property real general: generalMeasure.item ? generalMeasure.item.implicitHeight : 0
+    property real keys: keysMeasure.item ? keysMeasure.item.implicitHeight : 0
+    property real about: aboutMeasure.item ? aboutMeasure.item.implicitHeight : 0
+    Loader { id: generalMeasure; width: pageLoader.width; sourceComponent: generalPage
+      onLoaded: if (item) item.width = Qt.binding(function() { return generalMeasure.width }) }
+    Loader { id: keysMeasure; width: pageLoader.width; sourceComponent: keysPage
+      onLoaded: if (item) item.width = Qt.binding(function() { return keysMeasure.width }) }
+    Loader { id: aboutMeasure; width: pageLoader.width; sourceComponent: aboutPage
+      onLoaded: if (item) item.width = Qt.binding(function() { return aboutMeasure.width }) }
+  }
+
   // ── Pinned footer ──────────────────────────────────────────────────────────
   Text {
     id: footer

@@ -45,9 +45,9 @@ BarWidget {
     owner: root
     open: root.opened
     focusTarget: settings
-    // A fixed size: pages scroll inside it, so the popup never changes size.
+    // A fixed size, the height of the tallest page: pages scroll inside it, so the popup never changes size.
     contentWidth: popup.fittedContentWidth(Style.space(420))
-    contentHeight: popup.fittedContentHeight(Style.space(440))
+    contentHeight: popup.fittedContentHeight(settings.preferredHeight > 0 ? settings.preferredHeight : Style.space(440))
 
     SettingsPanel {
       id: settings
