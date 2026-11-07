@@ -25,7 +25,10 @@ Item {
   readonly property var layout: service ? service.layoutById(service.currentId) : null
   readonly property var zones: layout && layout.zones ? layout.zones : []
 
-  readonly property color gold: "#e8b84a"
+  // Every colour comes from the selected Omarchy theme; nothing here is fixed.
+  readonly property color accent: Commons.Color.accent
+  readonly property color border: Commons.Color.menu.border
+  readonly property color hoverFill: Commons.Color.menu.selectedBackground
   readonly property color text: Commons.Color.menu.text
   readonly property color background: Commons.Color.menu.background
   readonly property int rowHeight: Style.space(34)
@@ -78,7 +81,7 @@ Item {
       height: column.implicitHeight + root.pad * 2
       radius: Style.cornerRadius
       color: root.background
-      border.color: Util.alpha(root.gold, 0.85)
+      border.color: root.border
       border.width: Math.max(1, Style.space(2))
       x: Math.max(Style.space(8), Math.min(root.cursorX - panel.originX, panel.width - width - Style.space(8)))
       y: Math.max(Style.space(8), Math.min(root.cursorY - panel.originY, panel.height - height - Style.space(8)))
@@ -105,7 +108,7 @@ Item {
           width: parent.width
           bottomPadding: Style.space(6)
           text: "OMADJINN  ·  " + (root.layout ? String(root.layout.name || root.layout.id).toUpperCase() : "")
-          color: root.gold
+          color: root.accent
           font.family: Style.font.family
           font.pixelSize: Style.font.caption
           font.letterSpacing: 1.5
@@ -122,7 +125,7 @@ Item {
             width: column.width
             height: root.rowHeight
             radius: Style.cornerRadius / 2
-            color: rowArea.containsMouse ? Util.alpha(root.gold, 0.16) : "transparent"
+            color: rowArea.containsMouse ? root.hoverFill : "transparent"
 
             // A tiny screen with this row's zone lit up.
             Rectangle {
@@ -142,7 +145,7 @@ Item {
                 width: Math.max(2, row.modelData[2] * (mini.width - 2))
                 height: Math.max(2, row.modelData[3] * (mini.height - 2))
                 radius: 1
-                color: root.gold
+                color: root.accent
               }
             }
 
