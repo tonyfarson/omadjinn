@@ -165,16 +165,44 @@ Item {
         }
       }
 
-      // Bug report. The link comes when the repo exists.
+      // Suggestions and bug reports open the repo's new-issue page.
       Text {
+        id: suggestions
         anchors.left: questions.right
-        anchors.leftMargin: Style.space(12)
+        anchors.leftMargin: Style.space(16)
+        anchors.verticalCenter: questions.verticalCenter
+        textFormat: Text.PlainText
+        text: strings.t("help.suggestions")
+        color: Commons.Color.accent
+        font.family: Style.font.family
+        font.pixelSize: Style.font.caption
+        font.underline: suggestionsArea.containsMouse
+
+        MouseArea {
+          id: suggestionsArea
+          anchors.fill: parent
+          hoverEnabled: true
+          cursorShape: Qt.PointingHandCursor
+          onClicked: Qt.openUrlExternally("https://github.com/tonyfarson/omadjinn/issues/new?labels=enhancement")
+        }
+      }
+
+      Text {
+        id: bug
+        anchors.left: suggestions.right
+        anchors.leftMargin: Style.space(16)
         anchors.verticalCenter: questions.verticalCenter
         textFormat: Text.PlainText
         text: "\ueaaf"
         color: Commons.Color.accent
         font.family: Style.font.family
         font.pixelSize: Style.font.body
+
+        MouseArea {
+          anchors.fill: parent
+          cursorShape: Qt.PointingHandCursor
+          onClicked: Qt.openUrlExternally("https://github.com/tonyfarson/omadjinn/issues/new?labels=bug")
+        }
       }
 
       Text {
@@ -231,7 +259,7 @@ Item {
       Text {
         required property string modelData
         width: help.width
-        textFormat: Text.RichText
+        textFormat: Text.StyledText
         wrapMode: Text.WordWrap
         text: strings.t(modelData)
         color: Commons.Color.foreground
