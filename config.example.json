@@ -1,10 +1,10 @@
 {
-  "_comment": "Copy to ~/.config/omadjinn/config.json. Read every time a script runs; no reload needed. All optional features are off by default. dragRestore: dragging a snapped window out with SUPER + LEFT MOUSE resizes it to the default floating size. snapTiled: snap also floats tiled and scrolling windows (off: snap only moves windows that are already floating).",
+  "_comment": "Copy to ~/.config/omadjinn/config.json. Read every time a script runs; no reload needed. All optional features are off by default. dragRestore: dragging a snapped window out with SUPER + LEFT MOUSE resizes it to the default floating size. snapTiled: snap also floats tiled and scrolling windows. swap: snapping into a taken zone swaps with the window there. rightClickMenu: right-click a floating window's titlebar for the zone menu. keys: your own key for an action (snapLeft, snapRight, snapUp, snapDown, stackLeft, stackRight, stackUp, stackDown, stackNext, stackPrev, layoutPrev, layoutNext, menu, settings); an empty string switches that key off.",
   "features": {
     "swap": false,
-    "reflow": false,
-    "adopt": false,
     "dragRestore": false,
-    "snapTiled": false
-  }
+    "snapTiled": false,
+    "rightClickMenu": false
+  },
+  "keys": {}
 }
