@@ -45,5 +45,7 @@
   "save": "Save",
   "layouts.problems": "Left out of your layouts.json:",
   "layouts.restore": "Restore defaults",
-  "layouts.restored": "Built-in layouts restored. Your file was kept as layouts.backup.json."
+  "layouts.restored": "Built-in layouts restored. Your file was kept as",
+  "layouts.restore.confirm": "Click again to restore",
+  "layouts.restored.none": "You are already using the built-in layouts."
 }

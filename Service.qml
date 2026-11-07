@@ -293,12 +293,14 @@ Item {
     onTriggered: Quickshell.execDetached(["xdg-open", root.userLayoutsPath])
   }
 
-  // Puts the built-in layouts back. The user's file is kept as layouts.backup.json
-  // next to it (an older backup is replaced).
-  function restoreLayouts() {
-    run(["mv", "-f", userLayoutsPath, userLayoutsPath.replace(/layouts\.json$/, "layouts.backup.json")], function() {
+  // Puts the built-in layouts back. The user's file is kept next to it as
+  // layouts.backup-<date>-<time>.json, so no earlier backup is ever replaced. Calls
+  // done(backupName), or done("") when there was no file to put away.
+  function restoreLayouts(done) {
+    run(["sh", "-c", "b=\"${1%.json}.backup-$(date +%Y%m%d-%H%M%S).json\"; mv \"$1\" \"$b\" 2>/dev/null && basename \"$b\"", "sh", userLayoutsPath], function(out) {
       root.userLayouts = []
       root.layoutProblems = []
+      if (done) done(out.trim())
     })
   }
 

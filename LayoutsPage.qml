@@ -11,6 +11,7 @@ Column {
   readonly property var layouts: service ? service.layouts : []
   readonly property var problems: service ? service.layoutProblems : []
   property string note: ""
+  property bool armed: false
 
   // Shown when a layout has no glyph, and the choices offered when editing one.
   readonly property string defaultIcon: "\uebeb"
@@ -185,10 +186,19 @@ Column {
       id: restoreButton
       anchors.right: parent.right
       anchors.verticalCenter: parent.verticalCenter
-      text: strings.t("layouts.restore")
+      text: root.armed ? strings.t("layouts.restore.confirm") : strings.t("layouts.restore")
       bordered: true
-      onClicked: if (root.service) { root.service.restoreLayouts(); root.note = strings.t("layouts.restored") }
+      onClicked: {
+        if (!root.armed) { root.armed = true; armTimer.restart(); return }
+        root.armed = false
+        if (root.service) root.service.restoreLayouts(function(name) {
+          root.note = name === "" ? strings.t("layouts.restored.none") : strings.t("layouts.restored") + " " + name
+        })
+      }
     }
+
+    // The first click only arms the button; it disarms itself after a few seconds.
+    Timer { id: armTimer; interval: 5000; onTriggered: root.armed = false }
   }
 
   Text {
