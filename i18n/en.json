@@ -27,10 +27,14 @@
   "page.layouts": "Layouts",
   "page.about": "About",
   "page.general": "General",
-  "keys.soon": "Your keys will be listed here, with a way to change each one.",
+  "keys.soon": "Changing a bind is coming. Edit is a placeholder for now.",
   "layouts.custom": "Custom layouts",
-  "layouts.custom.soon": "A layout editor is planned. For now you can add layouts by editing ~/.config/omadjinn/layouts.json.",
+  "layouts.custom.soon": "A layout editor is planned. Until then you can add layouts by editing the file.",
   "about.version": "Version",
   "about.restart": "Restart plugin",
-  "about.restart.tip": "Restarts the Omarchy shell. Needed only after updating Omadjinn."
+  "about.restart.tip": "Restarts the Omarchy shell. Needed only after updating Omadjinn.",
+  "keys.description": "Description",
+  "keys.bind": "Bind",
+  "edit": "Edit",
+  "layouts.openfile": "Open layouts.json in your text editor"
 }

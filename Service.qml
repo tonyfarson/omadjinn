@@ -269,6 +269,19 @@ Item {
     userLayouts = list
   }
 
+  // Opens layouts.json in the default text editor. The first time, the bundled layouts
+  // are copied there so the file exists.
+  function openLayoutsFile() {
+    if (userLayouts.length === 0) saveLayouts(JSON.parse(JSON.stringify(layouts)))
+    openFileTimer.start()
+  }
+
+  Timer {
+    id: openFileTimer
+    interval: 400
+    onTriggered: Quickshell.execDetached(["xdg-open", root.userLayoutsPath])
+  }
+
   function renameLayout(id, name) {
     var list = JSON.parse(JSON.stringify(layouts))
     for (var i = 0; i < list.length; i++) if (list[i].id === id) list[i].name = name

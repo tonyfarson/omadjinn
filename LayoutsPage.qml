@@ -40,7 +40,8 @@ Column {
       }
 
       TextField {
-        width: parent.width - Style.space(40)
+        id: nameField
+        width: parent.width - Style.space(40) - editButton.width - Style.space(12)
         text: modelData.name || modelData.id
         // Save when the field is left or Enter is pressed, not per keystroke.
         onEditingFinished: {
@@ -50,6 +51,15 @@ Column {
           if (name === "") { text = modelData.name || modelData.id; return }
           if (name !== modelData.name && root.service) root.service.renameLayout(modelData.id, name)
         }
+      }
+
+      // Opens the field for editing, with the cursor at the end of the name.
+      Button {
+        id: editButton
+        anchors.verticalCenter: parent.verticalCenter
+        text: strings.t("edit")
+        bordered: true
+        onClicked: { nameField.forceActiveFocus(); nameField.cursorPosition = nameField.text.length }
       }
     }
   }
@@ -67,5 +77,10 @@ Column {
     color: Qt.darker(Commons.Color.foreground, 1.5)
     font.family: Style.font.family
     font.pixelSize: Style.font.caption
+  }
+
+  PageLink {
+    text: strings.t("layouts.openfile")
+    onClicked: if (root.service) root.service.openLayoutsFile()
   }
 }
