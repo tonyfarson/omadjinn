@@ -310,6 +310,19 @@ Item {
     return "ok"
   }
 
+  // The same menu for the focused window, for a key: it opens just inside the
+  // window's top-left corner.
+  function openMenuFocused() {
+    if (!menuEnabled) return "disabled"
+    run(["hyprctl", "-j", "activewindow"], function(t) {
+      var win = root.json(t)
+      if (!win || !win.address || win.fullscreen) return
+      if (!win.floating && config.features.snapTiled !== true) return
+      root.openMenu(win.address, win.at[0] + 16, win.at[1] + 12)
+    })
+    return "ok"
+  }
+
   // ── IPC: how keybinds (yours, in bindings.lua) reach the plugin ───────────────────────────
   // omarchy-shell omadjinn snap left|right|up|down
   // omarchy-shell omadjinn cycle next|prev
@@ -324,5 +337,6 @@ Item {
     function close(): string { root.settingsOpen = false; return "closed" }
     function toggle(): string { root.settingsOpen = !root.settingsOpen; return root.settingsOpen ? "open" : "closed" }
     function menu(address: string, x: string, y: string): string { return root.openMenu(address, x, y) }
+    function menuFocused(): string { return root.openMenuFocused() }
   }
 }
