@@ -105,3 +105,30 @@ function nextLayoutIndex(layouts, currentId, dir) {
   if (dir === "prev") return (idx - 1 + n) % n
   return (idx + 1) % n
 }
+
+// A plain-words name for a zone given as fractions [x, y, w, h]: "Left half",
+// "Right two thirds", "Top right", "Whole screen". A zone may carry its own name
+// instead; this is the fallback for layouts that do not.
+var SIZE_WORDS = [
+  [1 / 4, "quarter"], [1 / 3, "third"], [1 / 2, "half"],
+  [2 / 3, "two thirds"], [3 / 4, "three quarters"]
+]
+
+function sizeWord(fraction) {
+  for (var i = 0; i < SIZE_WORDS.length; i++)
+    if (Math.abs(SIZE_WORDS[i][0] - fraction) < 0.02) return SIZE_WORDS[i][1]
+  return Math.round(fraction * 100) + "%"
+}
+
+function zoneName(zone) {
+  var x = zone[0], y = zone[1], w = zone[2], h = zone[3], EPS = 0.02
+  var fullW = w > 1 - EPS, fullH = h > 1 - EPS
+  if (fullW && fullH) return "Whole screen"
+  var horiz = x < EPS ? "Left" : (x + w > 1 - EPS ? "Right" : "Middle")
+  var vert = y < EPS ? "Top" : (y + h > 1 - EPS ? "Bottom" : "Middle")
+  if (fullW) return vert + " " + sizeWord(h)
+  if (fullH) return horiz + " " + sizeWord(w)
+  if (horiz !== "Middle" && vert !== "Middle") return vert + " " + horiz.toLowerCase()
+  if (horiz === "Middle" && vert === "Middle") return "Center"
+  return horiz === "Middle" ? vert + " middle" : horiz + " middle"
+}

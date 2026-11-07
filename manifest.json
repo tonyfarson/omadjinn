@@ -8,12 +8,14 @@
   "description": "Snap layouts for floating windows: named zone layouts, snap keys, a layout cycler and a settings panel.",
   "kinds": [
     "service",
-    "bar-widget"
+    "bar-widget",
+    "overlay"
   ],
   "keepLoaded": true,
   "entryPoints": {
     "service": "Service.qml",
-    "barWidget": "BarWidget.qml"
+    "barWidget": "BarWidget.qml",
+    "overlay": "Menu.qml"
   },
   "barWidget": {
     "displayName": "Omadjinn - Floating Window Controls",

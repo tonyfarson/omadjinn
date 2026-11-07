@@ -267,9 +267,10 @@ Item {
     }
   }
 
-  // Step 1 of the prototype: prove the click reaches the plugin.
+  // Hand the clicked window and cursor position to the menu overlay (Menu.qml).
   function openMenu(address, x, y) {
-    Quickshell.execDetached(["omarchy", "osd", "-m", "Omadjinn menu: " + address + " at " + x + ", " + y, "-d", "1500"])
+    if (!menuEnabled || !shell) return "disabled"
+    shell.summon(manifest.id, JSON.stringify({ address: address, x: Number(x), y: Number(y) }))
     return "ok"
   }
 
