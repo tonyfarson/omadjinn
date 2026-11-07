@@ -20,5 +20,17 @@
   "feature.rightClickMenu.label": "Right-click menu on titlebars",
   "feature.rightClickMenu.description": "Right-click a floating window's titlebar to pick a zone or change the layout. Needs Omarchy's floating workspace, which draws the titlebars.",
   "menu.title": "OMADJINN",
-  "menu.layout": "Layout"
+  "menu.layout": "Layout",
+  "toc.title": "Contents",
+  "page.features": "Features",
+  "page.keys": "Keybinds",
+  "page.layouts": "Layouts",
+  "page.about": "About",
+  "page.general": "General",
+  "keys.soon": "Your keys will be listed here, with a way to change each one.",
+  "layouts.custom": "Custom layouts",
+  "layouts.custom.soon": "A layout editor is planned. For now you can add layouts by editing ~/.config/omadjinn/layouts.json.",
+  "about.version": "Version",
+  "about.restart": "Restart plugin",
+  "about.restart.tip": "Restarts the Omarchy shell. Needed only after updating Omadjinn."
 }

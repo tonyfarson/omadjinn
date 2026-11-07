@@ -45,17 +45,15 @@ BarWidget {
     owner: root
     open: root.opened
     focusTarget: settings
-    contentWidth: popup.fittedContentWidth(Style.space(480))
-    contentHeight: popup.fittedContentHeight(settings.implicitHeight)
+    // A fixed size: pages scroll inside it, so the popup never changes size.
+    contentWidth: popup.fittedContentWidth(Style.space(420))
+    contentHeight: popup.fittedContentHeight(Style.space(440))
 
     SettingsPanel {
       id: settings
       anchors.fill: parent
-      features: root.ready && root.svc.config.features ? root.svc.config.features : ({})
-      layouts: root.ready ? root.svc.layouts : []
+      service: root.ready ? root.svc : null
       onCloseRequested: root.close()
-      onFeatureToggled: function(key, value) { root.svc.setFeature(key, value) }
-      onLayoutRenamed: function(id, name) { root.svc.renameLayout(id, name) }
     }
   }
 }
