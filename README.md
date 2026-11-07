@@ -5,7 +5,7 @@ layouts (halves, quadrants, comms 1/3 + 2/3, 1/4 + 1/2 + 1/4, and your own), key
 zone, stack windows in a zone, swap them, and cycle layouts, a layout editor you drag lines in, and an on-screen
 toast (`omarchy osd`) naming the active layout.
 
-## About Keybindings
+## Default keys
 
 Omadjinn registers its own keys when the shell starts, so there is nothing to paste into your Hyprland
 config. They show up in Omarchy's keybindings menu with an "Omadjinn:" description.
@@ -47,7 +47,7 @@ titlebars (hyprbars) are on, Omadjinn leaves room for them in each zone.
 omarchy plugin add https://github.com/tonyfarson/omadjinn --enable
 ```
 
-The genie icon is added to the bar for you. The keys work straight away (see About Keybindings);
+The genie icon is added to the bar for you. The keys work straight away (see Default keys);
 settings open from the bar icon or `ALT + S`.
 
 Optional, for drag-out restore: turn on the `dragRestore` switch in the settings, and
