@@ -94,7 +94,7 @@ Item {
       model: [
         { text: "help.suggestions", icon: "\uea61", url: "https://github.com/tonyfarson/omadjinn/issues/new?labels=enhancement" },
         { text: "help.bugs", icon: "\ueaaf", url: "https://github.com/tonyfarson/omadjinn/issues/new?labels=bug" },
-        { text: "help.coffee", icon: "\uf0f4", url: "https://www.buymeacoffee.com/tonyfarson" }
+        { text: "help.coffee", icon: String.fromCodePoint(0xF06CA), url: "https://www.buymeacoffee.com/tonyfarson" }
       ]
 
       Row {
