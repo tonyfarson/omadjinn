@@ -1,0 +1,10 @@
+{
+  "_comment": "Copy to ~/.config/omadjinn/config.json. Read every time a script runs; no reload needed. All optional features are off by default. dragRestore: dragging a snapped window out with SUPER + LEFT MOUSE resizes it to the default floating size. snapTiled: snap also floats tiled and scrolling windows (off: snap only moves windows that are already floating).",
+  "features": {
+    "swap": false,
+    "reflow": false,
+    "adopt": false,
+    "dragRestore": false,
+    "snapTiled": false
+  }
+}

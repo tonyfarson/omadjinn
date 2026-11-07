@@ -1,0 +1,18 @@
+{
+  "settings.title": "Omadjinn - Floating Window Controls",
+  "settings.subtitle": "Snap layouts for floating windows",
+  "settings.features": "Features",
+  "settings.layouts": "Layouts",
+  "feature.dragRestore.label": "Restore size on drag-out",
+  "feature.dragRestore.description": "Dragging a snapped window out with SUPER + LEFT MOUSE resizes it to Omarchy's default floating size.",
+  "settings.hint": "Esc closes",
+  "help.link": "Questions?",
+  "help.back": "‹ Back to settings",
+  "help.title": "Omadjinn quick start",
+  "help.what": "<b>What it does.</b> Snap a floating window into a zone of the current layout, and cycle between layouts. A toast names the active layout.",
+  "help.keys": "<b>Set your keys.</b> Omadjinn ships with no keybindings. Add the ones you want to <code>~/.config/hypr/bindings.lua</code>, for example:<br><code>o.bind(\"ALT + LEFT\", \"Snap window left\", \"omarchy-shell omadjinn snap left\")</code><br>Commands: <code>snap left|right|up|down</code>, <code>cycle next|prev</code> and <code>toggle</code> (opens this panel). Pick keys that are free. The Omarchy manual explains keybindings: <a href=\"https://omarchy.org/manual/\">omarchy.org/manual</a>",
+  "help.settings": "<b>Settings.</b> Each switch turns an optional feature on or off. They are all off until you turn them on. Edit a layout name in its field.",
+  "help.more": "<b>More.</b> Full README: (link coming when the repo is up).",
+  "feature.snapTiled.label": "Snap tiled windows too",
+  "feature.snapTiled.description": "Off: snap only moves windows that are already floating. On: snapping a tiled or scrolling window floats it first."
+}

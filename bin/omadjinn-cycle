@@ -1,0 +1,39 @@
+#!/bin/bash
+# omadjinn-cycle [next|prev]
+# Step to the next (default) or previous layout and show its name in a toast.
+# Does not move windows yet.
+#
+# Layouts: ~/.config/omadjinn/layouts.json if present, else layouts/default.json
+# beside this script. State (current layout id): ~/.local/state/omadjinn/current
+
+set -euo pipefail
+
+dir=$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)
+file="$HOME/.config/omadjinn/layouts.json"
+[[ -f $file ]] || file="$dir/layouts/default.json"
+state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/omadjinn"
+state="$state_dir/current"
+dir_arg="${1:-next}"
+
+count=$(jq '.layouts | length' "$file")
+((count > 0)) || { echo "no layouts in $file" >&2; exit 1; }
+
+current=$(cat "$state" 2>/dev/null || true)
+idx=$(jq --arg id "$current" '[.layouts[].id] | index($id) // -1' "$file")
+
+case $dir_arg in
+  next) idx=$(( (idx + 1) % count )) ;;
+  prev) idx=$(( (idx - 1 + count) % count )) ;;
+  *) echo "usage: omadjinn-cycle [next|prev]" >&2; exit 1 ;;
+esac
+
+id=$(jq -r ".layouts[$idx].id" "$file")
+name=$(jq -r ".layouts[$idx].name // .layouts[$idx].id" "$file")
+icon=$(jq -r ".layouts[$idx].icon // empty" "$file")
+
+mkdir -p "$state_dir"
+printf '%s\n' "$id" > "$state"
+
+args=(-m "$name" -d 1500)
+[[ -n $icon ]] && args=(-i "$icon" "${args[@]}")
+omarchy osd "${args[@]}"

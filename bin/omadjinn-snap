@@ -1,0 +1,188 @@
+#!/usr/bin/env python3
+"""omadjinn-snap <left|right|up|down>
+
+Snap the focused window into a zone of the current layout. If the window is
+already in a zone, move it to the neighbouring zone in that direction; if it
+is not, take the nearest zone in that direction (or the zone it overlaps most).
+A tiled window is left alone, unless the snapTiled switch is on: then it is floated first. Zones are fractions of the monitor's usable
+area (the monitor minus bar/dock space Hyprland has reserved).
+
+Layouts: ~/.config/omadjinn/layouts.json if present, else layouts/default.json
+beside this script. Current layout id: ~/.local/state/omadjinn/current
+(written by omadjinn-cycle; the first layout is used if unset).
+"""
+import json, os, subprocess, sys
+
+DIRS = {"left": (-1, 0), "right": (1, 0), "up": (0, -1), "down": (0, 1)}
+TOL = 6  # px: how close a window must be to a zone to count as "in" it
+
+
+def hyprctl_json(*args):
+    return json.loads(subprocess.check_output(["hyprctl", "-j", *args]))
+
+
+def gap(option):
+    css = hyprctl_json("getoption", option).get("css", "0 0 0 0").split()
+    v = [int(x) for x in css]
+    return (v * 4)[:4] if len(v) == 1 else (v + v[:1] * 4)[:4] if len(v) < 4 else v[:4]
+
+
+def titlebar_height():
+    try:
+        plugins = subprocess.check_output(["hyprctl", "plugin", "list"], text=True)
+        if "hyprbars" not in plugins:
+            return 0
+        return int(hyprctl_json("getoption", "plugin:hyprbars:bar_height").get("int", 0))
+    except Exception:
+        return 0
+
+
+STATE = os.path.join(os.environ.get("XDG_STATE_HOME", os.path.expanduser("~/.local/state")), "omadjinn", "snapped")
+
+
+def remember(win, zone, geom, in_zone):
+    """Record the window's pre-snap size and its new box, for omadjinn' drag-out
+    (lua/drag.lua). A window already in a zone keeps the size it had before the first
+    snap. 0 0 means it was tiled, so no floating size is known."""
+    rows = {}
+    try:
+        for line in open(STATE):
+            f = line.split()
+            if len(f) == 7:
+                rows[f[0]] = [int(v) for v in f[1:]]
+    except OSError:
+        pass
+    alive = {c["address"] for c in hyprctl_json("clients")}
+    rows = {a: r for a, r in rows.items() if a in alive}
+    prev = rows.get(win["address"])
+    if prev and in_zone is not None:
+        orig = prev[0:2]
+    elif win.get("floating"):
+        orig = [geom[2], geom[3]]
+    else:
+        orig = [0, 0]
+    rows[win["address"]] = orig + list(zone)
+    os.makedirs(os.path.dirname(STATE), exist_ok=True)
+    with open(STATE, "w") as f:
+        for a, r in rows.items():
+            f.write(a + " " + " ".join(str(v) for v in r) + "\n")
+
+
+def feature(name):
+    """True if config.json has this feature switch on (off if missing or unreadable)."""
+    try:
+        with open(os.path.expanduser("~/.config/omadjinn/config.json")) as f:
+            return json.load(f).get("features", {}).get(name) is True
+    except (OSError, ValueError):
+        return False
+
+
+def lua(code):
+    subprocess.run(["hyprctl", "eval", code], check=True, stdout=subprocess.DEVNULL)
+
+
+def main():
+    if len(sys.argv) != 2 or sys.argv[1] not in DIRS:
+        sys.exit("usage: omadjinn-snap <left|right|up|down>")
+    dx, dy = DIRS[sys.argv[1]]
+
+    here = os.path.dirname(os.path.realpath(__file__))
+    path = os.path.expanduser("~/.config/omadjinn/layouts.json")
+    if not os.path.isfile(path):
+        path = os.path.join(here, "..", "layouts", "default.json")
+    layouts = json.load(open(path))["layouts"]
+    state = os.path.join(os.environ.get("XDG_STATE_HOME", os.path.expanduser("~/.local/state")), "omadjinn", "current")
+    try:
+        cur = open(state).read().strip()
+    except OSError:
+        cur = ""
+    layout = next((l for l in layouts if l["id"] == cur), layouts[0])
+
+    win = hyprctl_json("activewindow")
+    if not win or not win.get("address"):
+        return
+    if win.get("fullscreen"):
+        return
+    # Tiled and scrolling windows are left alone unless the snapTiled switch is on.
+    if not win.get("floating") and not feature("snapTiled"):
+        return
+    mon = next(m for m in hyprctl_json("monitors") if m["id"] == win["monitor"])
+
+    # Usable area in layout coordinates (logical pixels).
+    scale = mon.get("scale", 1) or 1
+    w, h = mon["width"] / scale, mon["height"] / scale
+    if mon.get("transform", 0) % 2:
+        w, h = h, w
+    # Hyprland reports reserved space as [left, top, right, bottom]. It is read
+    # live, so hiding the bar (which frees its strip) is honoured on the next snap.
+    rl, rt, rr, rb = mon.get("reserved", [0, 0, 0, 0])
+    ux, uy = mon["x"] + rl, mon["y"] + rt
+    uw, uh = w - rl - rr, h - rt - rb
+
+    # Gaps are read live too, so SUPER+SHIFT+BACKSPACE (gaps off/on) is honoured.
+    # CSS order: top, right, bottom, left. Screen edges get gaps_out, edges between
+    # zones get gaps_in (Hyprland applies gaps_in on each side of a window).
+    g_in = gap("general:gaps_in")
+    g_out = gap("general:gaps_out")
+
+    def inset(fx, fy, fw, fh):
+        e = 0.001
+        gl = g_out[3] if fx < e else g_in[3]
+        gt = g_out[0] if fy < e else g_in[0]
+        gr = g_out[1] if fx + fw > 1 - e else g_in[1]
+        gb = g_out[2] if fy + fh > 1 - e else g_in[2]
+        x0, y0 = ux + fx * uw + gl, uy + fy * uh + gt
+        x1, y1 = ux + (fx + fw) * uw - gr, uy + (fy + fh) * uh - gb
+        return (round(x0), round(y0), round(x1 - x0), round(y1 - y0))
+
+    # Floating windows carry a titlebar (hyprbars plugin) drawn ABOVE the window's
+    # own box, so each zone must leave room for it at the top or it hides behind
+    # the bar. Zero when the plugin is not loaded.
+    tb = titlebar_height()
+
+    def with_titlebar(z):
+        return (z[0], z[1] + tb, z[2], z[3] - tb)
+
+    zones = [with_titlebar(inset(*z)) for z in layout["zones"]]
+
+    wx, wy = win["at"]
+    ww, wh = win["size"]
+
+    def overlap(z):
+        ox = min(wx + ww, z[0] + z[2]) - max(wx, z[0])
+        oy = min(wy + wh, z[1] + z[3]) - max(wy, z[1])
+        return max(ox, 0) * max(oy, 0)
+
+    def centre(r):
+        return (r[0] + r[2] / 2, r[1] + r[3] / 2)
+
+    in_zone = next((z for z in zones if all(abs(a - b) <= TOL for a, b in zip(z, (wx, wy, ww, wh)))), None)
+    ref = centre(in_zone) if in_zone else centre((wx, wy, ww, wh))
+
+    best, best_score = None, None
+    for z in zones:
+        if z == in_zone:
+            continue
+        zx, zy = centre(z)
+        along = (zx - ref[0]) * dx + (zy - ref[1]) * dy
+        across = abs((zx - ref[0]) * dy) + abs((zy - ref[1]) * dx)
+        if along <= TOL:
+            continue
+        score = along + 2 * across
+        if best_score is None or score < best_score:
+            best, best_score = z, score
+    if best is None and not in_zone:
+        best = max(zones, key=overlap)
+    if best is None:
+        return  # already at the edge of the layout
+
+    remember(win, best, (wx, wy, ww, wh), in_zone)
+
+    target = f"address:{win['address']}"
+    if not win.get("floating"):
+        lua(f"hl.dispatch(hl.dsp.window.float({{ action = 'enable', window = '{target}' }}))")
+    lua(f"hl.dispatch(hl.dsp.window.resize({{ x = {best[2]}, y = {best[3]}, relative = false, window = '{target}' }}))")
+    lua(f"hl.dispatch(hl.dsp.window.move({{ x = {best[0]}, y = {best[1]}, relative = false, window = '{target}' }}))")
+
+
+main()

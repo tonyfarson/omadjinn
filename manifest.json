@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "io.github.tonyfarson.omadjinn",
+  "name": "Omadjinn - Floating Window Controls",
+  "version": "1.0.0",
+  "author": "Tony Farson",
+  "license": "MIT",
+  "description": "Snap layouts for floating windows: named zone layouts, snap keys, a layout cycler and a settings panel.",
+  "kinds": [
+    "service",
+    "bar-widget"
+  ],
+  "keepLoaded": true,
+  "entryPoints": {
+    "service": "Service.qml",
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "Omadjinn - Floating Window Controls",
+    "description": "Open the Omadjinn settings from the bar.",
+    "category": "Utilities",
+    "allowMultiple": false,
+    "defaultSection": "right",
+    "defaults": {},
+    "schema": []
+  }
+}
