@@ -54,9 +54,8 @@ Item {
       root.shell.hide(root.manifest.id)
   }
 
-  // Step 2 of the prototype: choosing a zone only says so; snapping comes next.
   function choose(index) {
-    Quickshell.execDetached(["omarchy", "osd", "-m", "Zone " + (index + 1) + ": " + Model.zoneName(root.zones[index]), "-d", "1200"])
+    if (root.service) root.service.snapToZone(root.address, index)
     root.dismiss()
   }
 

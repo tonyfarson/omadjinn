@@ -108,6 +108,28 @@ Item {
     try { return JSON.parse(text) } catch (e) { return null }
   }
 
+  // Everything one snap needs besides the window: its monitor, the live gaps and
+  // the titlebar height, all read from Hyprland. Calls done(mon, gIn, gOut, titlebar).
+  function withContext(win, done) {
+    run(["hyprctl", "-j", "monitors"], function(t2) {
+      var mons = root.json(t2) || [], mon = null
+      for (var i = 0; i < mons.length; i++) if (mons[i].id === win.monitor) mon = mons[i]
+      if (!mon) return
+      run(["hyprctl", "-j", "getoption", "general:gaps_in"], function(t3) {
+        var gIn = Model.parseGap((root.json(t3) || {}).css)
+        run(["hyprctl", "-j", "getoption", "general:gaps_out"], function(t4) {
+          var gOut = Model.parseGap((root.json(t4) || {}).css)
+          run(["hyprctl", "plugin", "list"], function(t5) {
+            if (t5.indexOf("hyprbars") < 0) { done(mon, gIn, gOut, 0); return }
+            run(["hyprctl", "-j", "getoption", "plugin:hyprbars:bar_height"], function(t6) {
+              done(mon, gIn, gOut, Number((root.json(t6) || {}).int) || 0)
+            })
+          })
+        })
+      })
+    })
+  }
+
   function snap(direction) {
     if (!(direction in Model.DIRS)) return "direction must be left, right, up or down"
     if (layouts.length === 0) return "no layouts"
@@ -116,22 +138,28 @@ Item {
       if (!win || !win.address || win.fullscreen) return
       // Tiled and scrolling windows are left alone unless the snapTiled switch is on.
       if (!win.floating && root.config.features.snapTiled !== true) return
-      run(["hyprctl", "-j", "monitors"], function(t2) {
-        var mons = root.json(t2) || [], mon = null
-        for (var i = 0; i < mons.length; i++) if (mons[i].id === win.monitor) mon = mons[i]
-        if (!mon) return
-        run(["hyprctl", "-j", "getoption", "general:gaps_in"], function(t3) {
-          var gIn = Model.parseGap((root.json(t3) || {}).css)
-          run(["hyprctl", "-j", "getoption", "general:gaps_out"], function(t4) {
-            var gOut = Model.parseGap((root.json(t4) || {}).css)
-            run(["hyprctl", "plugin", "list"], function(t5) {
-              if (t5.indexOf("hyprbars") < 0) { root.snapNow(win, mon, gIn, gOut, 0, direction); return }
-              run(["hyprctl", "-j", "getoption", "plugin:hyprbars:bar_height"], function(t6) {
-                root.snapNow(win, mon, gIn, gOut, Number((root.json(t6) || {}).int) || 0, direction)
-              })
-            })
-          })
-        })
+      root.withContext(win, function(mon, gIn, gOut, titlebar) {
+        root.snapNow(win, mon, gIn, gOut, titlebar, direction)
+      })
+    })
+    return "ok"
+  }
+
+  // Put the window with this address into zone number `index` of the current layout
+  // (used by the right-click menu).
+  function snapToZone(address, index) {
+    if (layouts.length === 0) return "no layouts"
+    run(["hyprctl", "-j", "clients"], function(t1) {
+      var all = root.json(t1) || [], win = null
+      for (var i = 0; i < all.length; i++) if (all[i].address === address) win = all[i]
+      if (!win || win.fullscreen) return
+      root.withContext(win, function(mon, gIn, gOut, titlebar) {
+        var layout = root.layoutById(root.currentId)
+        if (!layout) return
+        var zones = Model.zonesFor(layout.zones, mon, gIn, gOut, titlebar)
+        if (index < 0 || index >= zones.length) return
+        var geo = [win.at[0], win.at[1], win.size[0], win.size[1]]
+        root.placeIn(win, zones[index], geo, Model.pickZone(zones, geo, "left").inZone)
       })
     })
     return "ok"
@@ -149,8 +177,12 @@ Item {
       if (pick.inZone && !rows[win.address]) remember(win, pick.inZone, geo, pick.inZone)
       return
     }
-    var z = pick.zone
-    remember(win, z, geo, pick.inZone)
+    placeIn(win, pick.zone, geo, pick.inZone)
+  }
+
+  // Remember the pre-snap size, float the window if needed, then size and move it into the zone.
+  function placeIn(win, z, geo, inZone) {
+    remember(win, z, geo, inZone)
     var target = "address:" + win.address
     if (!win.floating) Hyprland.dispatch("hl.dsp.window.float({ action = 'enable', window = '" + target + "' })")
     Hyprland.dispatch("hl.dsp.window.resize({ x = " + z[2] + ", y = " + z[3] + ", relative = false, window = '" + target + "' })")
