@@ -320,6 +320,30 @@ Item {
     return id
   }
 
+  // Deleting. The list before the last delete is kept so it can be undone. The last
+  // layout can't be deleted: an empty file would bring the built-ins back by itself.
+  property var undoLayouts: null
+
+  function deleteLayout(id) {
+    if (layouts.length <= 1) return false
+    var before = JSON.parse(JSON.stringify(layouts))
+    var list = before.filter(function(l) { return l.id !== id })
+    if (list.length === before.length) return false
+    undoLayouts = before
+    if (currentId === id) {
+      currentId = list[0].id
+      currentFile.setText(currentId + "\n")
+    }
+    saveLayouts(list)
+    return true
+  }
+
+  function undoDelete() {
+    if (!undoLayouts) return
+    saveLayouts(undoLayouts)
+    undoLayouts = null
+  }
+
   function setLayoutIcon(id, icon) {
     var list = JSON.parse(JSON.stringify(layouts))
     for (var i = 0; i < list.length; i++) if (list[i].id === id) list[i].icon = icon

@@ -54,5 +54,8 @@
   "editor.splith": "Split ━",
   "editor.merge": "Merge line",
   "editor.hint": "Click a zone, then split it. Drag a line to move it. Click a line, then Merge line to join the zones on its two sides.",
-  "editor.cannot": "This layout has overlapping zones or gaps, so it can't be drawn here. Edit it in layouts.json."
+  "editor.cannot": "This layout has overlapping zones or gaps, so it can't be drawn here. Edit it in layouts.json.",
+  "layouts.deleted": "Deleted",
+  "layouts.undo": "Undo",
+  "layouts.delete.tip": "Delete this layout"
 }
