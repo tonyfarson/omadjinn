@@ -59,17 +59,16 @@ Column {
   property string editorFor: ""
   readonly property bool editorOpen: editorFor !== ""
 
-  ZoneEditor {
-    visible: root.editorOpen
-    width: root.width
-    service: root.service
-    layoutId: root.editorFor === "new" ? "" : root.editorFor
-    onFinished: root.editorFor = ""
+  signal scrollRequested(real y)
+
+  // Opening the editor starts it fresh and brings it into view.
+  onEditorOpenChanged: {
+    zoneEditor.load()
+    if (editorOpen) scrollRequested(listView.y + zoneEditor.y - Style.space(8))
   }
 
   Column {
     id: listView
-    visible: !root.editorOpen
     width: root.width
     spacing: root.spacing
 
@@ -274,6 +273,28 @@ Column {
       }
     }
 
+    Text {
+      visible: root.note !== ""
+      textFormat: Text.PlainText
+      width: parent.width
+      wrapMode: Text.WordWrap
+      text: root.note
+      color: Qt.darker(Commons.Color.foreground, 1.5)
+      font.family: Style.font.family
+      font.pixelSize: Style.font.caption
+    }
+
+    // The zone editor lives here, greyed out until New layout (or Edit zones) opens it.
+    ZoneEditor {
+      id: zoneEditor
+      width: root.width
+      enabled: root.editorOpen
+      opacity: root.editorOpen ? 1 : 0.35
+      service: root.service
+      layoutId: root.editorFor === "new" ? "" : root.editorFor
+      onFinished: root.editorFor = ""
+    }
+
     // Plain text, then a link in the accent colour.
     Row {
       spacing: Style.space(6)
@@ -290,17 +311,6 @@ Column {
         text: strings.t("layouts.openfile")
         onClicked: if (root.service) root.service.openLayoutsFile()
       }
-    }
-
-    Text {
-      visible: root.note !== ""
-      textFormat: Text.PlainText
-      width: parent.width
-      wrapMode: Text.WordWrap
-      text: root.note
-      color: Qt.darker(Commons.Color.foreground, 1.5)
-      font.family: Style.font.family
-      font.pixelSize: Style.font.caption
     }
 
   }

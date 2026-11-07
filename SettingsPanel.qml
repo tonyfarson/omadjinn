@@ -206,7 +206,7 @@ Item {
     GeneralPage { service: root.service }
   }
   Component { id: keysPage; KeysPage { service: root.service; onFocusRequested: root.forceActiveFocus() } }
-  Component { id: layoutsPage; LayoutsPage { service: root.service; onFocusRequested: root.forceActiveFocus() } }
+  Component { id: layoutsPage; LayoutsPage { service: root.service; onFocusRequested: root.forceActiveFocus(); onScrollRequested: function(y) { flick.contentY = Math.max(0, Math.min(y, flick.contentHeight - flick.height)) } } }
   Component { id: aboutPage; AboutPage { service: root.service } }
 
   // ── Panel height ───────────────────────────────────────────────────────────
