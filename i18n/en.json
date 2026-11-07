@@ -57,5 +57,6 @@
   "editor.cannot": "This layout has overlapping zones or gaps, so it can't be drawn here. Edit it in layouts.json.",
   "layouts.deleted": "Deleted",
   "layouts.undo": "Undo",
-  "layouts.delete.tip": "Delete this layout"
+  "layouts.delete.tip": "Delete this layout",
+  "layouts.restore.row": "Restore layout?"
 }

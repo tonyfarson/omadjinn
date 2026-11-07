@@ -18,9 +18,7 @@ Column {
   readonly property var shown: {
     var list = layouts.slice()
     if (ghost) {
-      var g = JSON.parse(JSON.stringify(ghost.layout))
-      g._deleted = true
-      list.splice(Math.min(ghost.index, list.length), 0, g)
+      list.splice(Math.min(ghost.index, list.length), 0, ghost.layout)
     }
     return list
   }
@@ -30,10 +28,7 @@ Column {
     var at = layouts.findIndex(function(x) { return x.id === id })
     if (at < 0) return
     var before = JSON.parse(JSON.stringify(layouts[at]))
-    var ok = service.deleteLayout(id)
-    console.log("OJDEL remove", id, ok, at)
-    if (ok) ghost = { layout: before, index: at }
-    console.log("OJDEL ghost", JSON.stringify(ghost), "shown", shown.length)
+    if (service.deleteLayout(id)) ghost = { layout: before, index: at }
   }
 
   function undoRemove() {
@@ -42,7 +37,6 @@ Column {
   }
 
   function forgetDelete() {
-    console.log("OJDEL forget", visible)
     ghost = null
     if (service) service.undoLayouts = null
   }
@@ -86,6 +80,9 @@ Column {
       Column {
         id: layoutRow
         required property var modelData
+        required property int index
+        // After a delete the row is replaced, in the same space, by a restore bar.
+        readonly property bool gone: root.ghost !== null && index === root.ghost.index
         // The name is read-only until Edit is clicked; the button then reads Save.
         // While editing, the glyph choices show under the name.
         property bool editing: false
@@ -102,7 +99,18 @@ Column {
           if (name !== modelData.name && root.service) root.service.renameLayout(modelData.id, name)
         }
 
+        // The restore bar: the size of a layout line, shown until you leave the page.
+        Button {
+          visible: layoutRow.gone
+          width: parent.width
+          height: Math.max(implicitHeight, nameField.implicitHeight)
+          text: strings.t("layouts.restore.row")
+          bordered: true
+          onClicked: root.undoRemove()
+        }
+
         Row {
+          visible: !layoutRow.gone
           width: parent.width
           spacing: Style.space(12)
 
@@ -112,8 +120,7 @@ Column {
             width: Style.space(28)
             anchors.verticalCenter: parent.verticalCenter
             horizontalAlignment: Text.AlignHCenter
-            opacity: layoutRow.gone ? 0 : 1
-          text: modelData.icon || root.defaultIcon
+            text: modelData.icon || root.defaultIcon
             color: Commons.Color.foreground
             font.family: Style.font.family
             font.pixelSize: Style.font.title
@@ -123,8 +130,6 @@ Column {
             id: nameField
             width: parent.width - Style.space(40) - editButton.width - Style.space(12) - (trashButton.visible ? trashButton.width + Style.space(12) : 0)
             readOnly: !layoutRow.editing
-          enabled: !layoutRow.gone
-          opacity: layoutRow.gone ? 0 : 1
             text: modelData.name || modelData.id
             // Enter or leaving the field saves; Esc puts the old name back.
             onEditingFinished: layoutRow.finish(true)
@@ -145,18 +150,18 @@ Column {
             }
           }
 
-          // Deletes the layout at once. The row then stays, dimmed, and this button becomes
-          // undo. The last layout can't be deleted, so its trash button is hidden.
+          // Deletes the layout at once. The row is then replaced by a restore bar until you
+          // leave the page. The last layout can't be deleted, so its trash button is hidden.
           Button {
             id: trashButton
-            visible: layoutRow.gone || root.layouts.length > 1
+            visible: root.layouts.length > 1
             anchors.verticalCenter: parent.verticalCenter
-            text: layoutRow.gone ? "\uea77" : "\uea81"
+            text: "\uea81"
             bordered: true
-            tooltipText: layoutRow.gone ? strings.t("layouts.undo") : strings.t("layouts.delete.tip")
+            tooltipText: strings.t("layouts.delete.tip")
             // The work happens in functions on the page: deleting rebuilds this row, and
             // code running inside it would stop part way.
-            onClicked: layoutRow.gone ? root.undoRemove() : root.removeLayout(layoutRow.modelData.id)
+            onClicked: root.removeLayout(layoutRow.modelData.id)
           }
         }
 
