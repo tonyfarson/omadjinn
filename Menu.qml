@@ -20,7 +20,8 @@ Item {
   property real cursorX: 0
   property real cursorY: 0
 
-  readonly property var service: shell && manifest ? shell.serviceFor(manifest.id) : null
+  // The shell fills this in with the plugin's service when it loads the overlay.
+  property var service: null
   readonly property var layout: service ? service.layoutById(service.currentId) : null
   readonly property var zones: layout && layout.zones ? layout.zones : []
 
