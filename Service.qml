@@ -141,7 +141,7 @@ Item {
     })
   }
 
-  function snap(direction) {
+  function snap(direction, stackMode) {
     if (!(direction in Model.DIRS)) return "direction must be left, right, up or down"
     if (layouts.length === 0) return "no layouts"
     run(["hyprctl", "-j", "activewindow"], function(t1) {
@@ -150,7 +150,7 @@ Item {
       // Tiled and scrolling windows are left alone unless the snapTiled switch is on.
       if (!win.floating && root.config.features.snapTiled !== true) return
       root.withContext(win, function(mon, gIn, gOut, titlebar) {
-        root.snapNow(win, mon, gIn, gOut, titlebar, direction)
+        root.snapNow(win, mon, gIn, gOut, titlebar, direction, stackMode === true)
       })
     })
     return "ok"
@@ -176,7 +176,7 @@ Item {
     return "ok"
   }
 
-  function snapNow(win, mon, gIn, gOut, titlebar, direction) {
+  function snapNow(win, mon, gIn, gOut, titlebar, direction, stackMode) {
     var layout = layoutById(currentId)
     if (!layout) return
     var zones = Model.zonesFor(layout.zones, mon, gIn, gOut, titlebar)
@@ -188,7 +188,7 @@ Item {
       if (pick.inZone && !rows[win.address]) remember(win, pick.inZone, geo, pick.inZone)
       return
     }
-    placeSwapping(win, pick.zone, geo, pick.inZone)
+    placeSwapping(win, pick.zone, geo, pick.inZone, stackMode === true)
   }
 
   // Swap: with the switch on, a window already in the target zone (the top one, if
@@ -196,8 +196,9 @@ Item {
   // snapped window came from: that zone, or its free-floating spot.
   readonly property bool swapEnabled: config.features.swap === true
 
-  function placeSwapping(win, zone, geo, inZone) {
-    if (!swapEnabled) { placeIn(win, zone, geo, inZone); return }
+  // stackMode (the stack keys) never swaps: the window lands on top of the stack.
+  function placeSwapping(win, zone, geo, inZone, stackMode) {
+    if (!swapEnabled || stackMode === true) { placeIn(win, zone, geo, inZone); return }
     run(["hyprctl", "-j", "clients"], function(text) {
       var wsId = win.workspace ? win.workspace.id : -1
       var occ = Model.occupants(root.json(text) || [], zone, win.address, wsId)
@@ -210,8 +211,13 @@ Item {
     var target = "address:" + other.address
     Hyprland.dispatch("hl.dsp.window.resize({ x = " + box[2] + ", y = " + box[3] + ", relative = false, window = '" + target + "' })")
     Hyprland.dispatch("hl.dsp.window.move({ x = " + box[0] + ", y = " + box[1] + ", relative = false, window = '" + target + "' })")
-    if (inZone) remember(other, inZone, [other.at[0], other.at[1], other.size[0], other.size[1]], inZone)
-    else unmark(other.address)
+    if (inZone) {
+      remember(other, inZone, [other.at[0], other.at[1], other.size[0], other.size[1]], inZone)
+      pushStack(inZone, other.address)
+    } else {
+      unmark(other.address)
+      removeFromStacks(other.address)
+    }
   }
 
   // Forget that a window was snapped (it is back where it floats freely).
@@ -236,6 +242,57 @@ Item {
     // never focused or raised the window, so ask Hyprland to do both.
     Hyprland.dispatch("hl.dsp.focus({ window = '" + target + "' })")
     Hyprland.dispatch("hl.dsp.window.alter_zorder({ window = '" + target + "', mode = 'top' })")
+    pushStack(z, win.address)
+  }
+
+  // ── Stacks ─────────────────────────────────────────────────────────────────
+  // Windows stacked in one zone, in the order they joined (the first at the bottom, the
+  // newest on top). A window joining always goes on top; one that leaves the zone is dropped
+  // the next time the order is used. Kept in ~/.local/state/omadjinn/stacks, one line per
+  // zone: "x,y,w,h address address ...".
+  property var stacks: ({})
+
+  function writeStacks(map) {
+    stacks = map
+    var out = ""
+    for (var k in map) if (map[k].length > 0) out += k + " " + map[k].join(" ") + "\n"
+    stacksFile.setText(out)
+  }
+
+  function removeFromStacks(address) {
+    var next = ({})
+    for (var k in stacks) {
+      var kept = stacks[k].filter(function(a) { return a !== address })
+      if (kept.length > 0) next[k] = kept
+    }
+    writeStacks(next)
+  }
+
+  // Put a window on top of the stack for this zone (and out of any other stack).
+  function pushStack(zone, address) {
+    var key = zone.join(",")
+    var next = ({})
+    for (var k in stacks) {
+      var kept = stacks[k].filter(function(a) { return a !== address })
+      if (kept.length > 0) next[k] = kept
+    }
+    next[key] = (next[key] || []).concat([address])
+    writeStacks(next)
+  }
+
+  FileView {
+    id: stacksFile
+    path: root.stateDir + "/stacks"
+    printErrors: false
+    onLoaded: {
+      var map = ({})
+      var lines = text().split("\n")
+      for (var i = 0; i < lines.length; i++) {
+        var f = lines[i].trim().split(/\s+/)
+        if (f.length >= 2 && /^[-0-9.,]+$/.test(f[0])) map[f[0]] = f.slice(1)
+      }
+      root.stacks = map
+    }
   }
 
   // ── Remember the pre-snap size (for the drag-out restore) ──────────────────
@@ -510,6 +567,7 @@ Item {
 
     function ping(): string { return "pong" }
     function snap(direction: string): string { return root.snap(direction) }
+    function stack(direction: string): string { return root.snap(direction, true) }
     function cycle(direction: string): string { return root.cycle(direction) }
     function current(): string { return root.currentId }
     function open(): string { root.settingsOpen = true; return "open" }

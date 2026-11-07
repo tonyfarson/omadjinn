@@ -58,7 +58,7 @@ for (const bad of ["", "ALT +", "ALT + C; os.exit()", 'ALT + "C"', "FOO + C", "A
 const defaults = M.keysFor({})
 assert.strictEqual(defaults.length, M.KEY_ACTIONS.length)
 assert.strictEqual(new Set(defaults.map(d => d.key)).size, defaults.length)
-assert(defaults.every(d => d.key.startsWith("ALT + ")))
+assert(defaults.every(d => d.key.split(" + ").includes("ALT")))
 assert.strictEqual(defaults.find(d => d.id === "menu").key, "ALT + C")
 // a user's choice replaces the default; "" turns it off; junk is skipped; skip leaves one out
 const custom = M.keysFor({ keys: { menu: "super + m", settings: "", snapUp: "ALT + 1; boom" } }, { layoutNext: true })
