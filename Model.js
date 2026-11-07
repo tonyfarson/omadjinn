@@ -425,3 +425,19 @@ function leafZones(tree) {
   walk(tree, [], [0, 0, 1, 1])
   return out
 }
+
+// The windows sitting in a zone (box within TOL of it), top one first. `clients` is
+// `hyprctl -j clients`; a window counts if it is a mapped, visible floating window on the
+// workspace, other than `exclude`. "Top" is the most recently focused, since Hyprland does
+// not expose stacking order.
+function occupants(clients, zone, exclude, workspaceId) {
+  var out = []
+  for (var i = 0; i < (clients || []).length; i++) {
+    var c = clients[i]
+    if (!c || !c.mapped || c.hidden || !c.floating || c.address === exclude) continue
+    if (c.workspace && c.workspace.id !== workspaceId) continue
+    if (sameBox([c.at[0], c.at[1], c.size[0], c.size[1]], zone)) out.push(c)
+  }
+  out.sort(function(p, q) { return (p.focusHistoryID || 0) - (q.focusHistoryID || 0) })
+  return out
+}

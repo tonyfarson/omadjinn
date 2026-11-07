@@ -170,7 +170,7 @@ Item {
         var zones = Model.zonesFor(layout.zones, mon, gIn, gOut, titlebar)
         if (index < 0 || index >= zones.length) return
         var geo = [win.at[0], win.at[1], win.size[0], win.size[1]]
-        root.placeIn(win, zones[index], geo, Model.pickZone(zones, geo, "left").inZone)
+        root.placeSwapping(win, zones[index], geo, Model.pickZone(zones, geo, "left").inZone)
       })
     })
     return "ok"
@@ -188,7 +188,41 @@ Item {
       if (pick.inZone && !rows[win.address]) remember(win, pick.inZone, geo, pick.inZone)
       return
     }
-    placeIn(win, pick.zone, geo, pick.inZone)
+    placeSwapping(win, pick.zone, geo, pick.inZone)
+  }
+
+  // Swap: with the switch on, a window already in the target zone (the top one, if
+  // several are stacked) trades places with the one being snapped. It goes to where the
+  // snapped window came from: that zone, or its free-floating spot.
+  readonly property bool swapEnabled: config.features.swap === true
+
+  function placeSwapping(win, zone, geo, inZone) {
+    if (!swapEnabled) { placeIn(win, zone, geo, inZone); return }
+    run(["hyprctl", "-j", "clients"], function(text) {
+      var wsId = win.workspace ? win.workspace.id : -1
+      var occ = Model.occupants(root.json(text) || [], zone, win.address, wsId)
+      if (occ.length > 0) root.swapOut(occ[0], geo, inZone)
+      root.placeIn(win, zone, geo, inZone)
+    })
+  }
+
+  function swapOut(other, box, inZone) {
+    var target = "address:" + other.address
+    Hyprland.dispatch("hl.dsp.window.resize({ x = " + box[2] + ", y = " + box[3] + ", relative = false, window = '" + target + "' })")
+    Hyprland.dispatch("hl.dsp.window.move({ x = " + box[0] + ", y = " + box[1] + ", relative = false, window = '" + target + "' })")
+    if (inZone) remember(other, inZone, [other.at[0], other.at[1], other.size[0], other.size[1]], inZone)
+    else unmark(other.address)
+  }
+
+  // Forget that a window was snapped (it is back where it floats freely).
+  function unmark(address) {
+    if (!(address in rows)) return
+    var next = ({})
+    for (var k in rows) if (k !== address) next[k] = rows[k]
+    rows = next
+    var out = ""
+    for (var a in next) out += a + " " + next[a].join(" ") + "\n"
+    snappedFile.setText(out)
   }
 
   // Remember the pre-snap size, float the window if needed, then size and move it into the zone.

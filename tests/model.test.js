@@ -1,6 +1,6 @@
 // Run with: node tests/model.test.js   (Model.js is a QML library; load it as text.)
 const fs = require("fs"), assert = require("assert")
-const M = {}; new Function("exports", fs.readFileSync(__dirname + "/../Model.js", "utf8").replace(".pragma library", "") + "\nObject.assign(exports,{parseGap,zonesFor,pickZone,origSize,nextLayoutIndex,zoneName,KEY_ACTIONS,parseKey,keysFor,keyConflict,layoutProblem,checkLayouts,treeToZones,zonesToTree,splitZone,mergeSplit,moveSplit,splitLines,nodeRect,nodeAt,leafZones})")(M)
+const M = {}; new Function("exports", fs.readFileSync(__dirname + "/../Model.js", "utf8").replace(".pragma library", "") + "\nObject.assign(exports,{parseGap,zonesFor,pickZone,origSize,nextLayoutIndex,zoneName,KEY_ACTIONS,parseKey,keysFor,keyConflict,layoutProblem,checkLayouts,treeToZones,zonesToTree,splitZone,mergeSplit,moveSplit,splitLines,nodeRect,nodeAt,leafZones,occupants})")(M)
 
 // kijo's monitor: 3840x2160 at scale 1.5, bar reserves 30 at the top.
 const mon = { x: -1280, y: -1440, width: 3840, height: 2160, scale: 1.5, reserved: [0, 30, 0, 0] }
@@ -131,3 +131,20 @@ assert.strictEqual(M.splitZone(tiny, [0], "v"), tiny)
 console.log("model.test.js: editor ok")
 assert.strictEqual(M.leafZones(M.zonesToTree(shipped[2].zones)).length, shipped[2].zones.length)
 console.log("model.test.js: leafZones ok")
+
+// occupants
+const zoneBox = [0, 40, 960, 500]
+const win = (a, at, size, extra) => Object.assign({ address: a, mapped: true, hidden: false, floating: true, workspace: { id: 1 }, at, size, focusHistoryID: 0 }, extra || {})
+const cl = [
+  win("a", [0, 40], [960, 500], { focusHistoryID: 3 }),
+  win("b", [2, 41], [958, 500], { focusHistoryID: 1 }),
+  win("c", [960, 40], [960, 500]),                       // another zone
+  win("d", [0, 40], [960, 500], { floating: false }),    // tiled
+  win("e", [0, 40], [960, 500], { workspace: { id: 2 } }),
+  win("f", [0, 40], [960, 500], { hidden: true }),
+  win("self", [0, 40], [960, 500], { focusHistoryID: 0 })
+]
+assert.deepStrictEqual(M.occupants(cl, zoneBox, "self", 1).map(c => c.address), ["b", "a"])
+assert.deepStrictEqual(M.occupants([], zoneBox, "self", 1), [])
+assert.deepStrictEqual(M.occupants(null, zoneBox, "self", 1), [])
+console.log("model.test.js: occupants ok")

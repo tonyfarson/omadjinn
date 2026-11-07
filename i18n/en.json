@@ -58,5 +58,7 @@
   "layouts.deleted": "Deleted",
   "layouts.undo": "Undo",
   "layouts.delete.tip": "Delete this layout",
-  "layouts.restore.row": "Restore layout?"
+  "layouts.restore.row": "Restore layout?",
+  "feature.swap.label": "Swap windows when snapping into a taken zone",
+  "feature.swap.description": "Off: the snapped window lands on top of whatever is in the zone. On: the window in the zone trades places with it and goes where it came from."
 }

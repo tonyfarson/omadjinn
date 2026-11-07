@@ -42,4 +42,12 @@ Column {
     checked: root.features.rightClickMenu === true
     onClicked: if (root.service) root.service.setFeature("rightClickMenu", !checked)
   }
+
+  Toggle {
+    width: parent.width
+    label: strings.t("feature.swap.label")
+    description: strings.t("feature.swap.description")
+    checked: root.features.swap === true
+    onClicked: if (root.service) root.service.setFeature("swap", !checked)
+  }
 }
