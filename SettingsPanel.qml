@@ -81,10 +81,54 @@ Item {
     }
   }
 
+  // Suggestions, bugs and the coffee link, on every page, under the subtitle. They sit
+  // below the genie in the corner, so the row can use the full width.
+  Row {
+    id: links
+    anchors.left: parent.left
+    anchors.top: header.bottom
+    anchors.topMargin: Math.max(Style.space(8), watermark.height - header.height + Style.space(4))
+    spacing: Style.space(14)
+
+    Repeater {
+      model: [
+        { text: "help.suggestions", icon: "\uea61", url: "https://github.com/tonyfarson/omadjinn/issues/new?labels=enhancement" },
+        { text: "help.bugs", icon: "\ueaaf", url: "https://github.com/tonyfarson/omadjinn/issues/new?labels=bug" },
+        { text: "help.coffee", icon: "\uf0f4", url: "https://www.buymeacoffee.com/tonyfarson" }
+      ]
+
+      Row {
+        required property var modelData
+        spacing: Style.space(5)
+
+        PageLink {
+          anchors.verticalCenter: parent.verticalCenter
+          text: strings.t(modelData.text)
+          onClicked: Qt.openUrlExternally(modelData.url)
+        }
+
+        Text {
+          anchors.verticalCenter: parent.verticalCenter
+          textFormat: Text.PlainText
+          text: modelData.icon
+          color: Commons.Color.accent
+          font.family: Style.font.family
+          font.pixelSize: Style.font.body
+
+          MouseArea {
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            onClicked: Qt.openUrlExternally(modelData.url)
+          }
+        }
+      }
+    }
+  }
+
   Rectangle {
     id: rule
-    anchors.top: header.bottom
-    anchors.topMargin: Math.max(Style.space(8), watermark.height - header.height)
+    anchors.top: links.bottom
+    anchors.topMargin: Style.space(8)
     anchors.left: parent.left
     // Stops short of the genie in the corner.
     width: parent.width - watermark.width - Style.space(12)
@@ -187,15 +231,32 @@ Item {
       onLoaded: if (item) item.width = Qt.binding(function() { return aboutMeasure.width }) }
   }
 
-  // ── Pinned footer ──────────────────────────────────────────────────────────
-  Text {
+  // ── Pinned footer: the version on the left, the hint on the right ─────────
+  Item {
     id: footer
+    anchors.left: parent.left
     anchors.right: parent.right
     anchors.bottom: parent.bottom
-    textFormat: Text.PlainText
-    text: strings.t("settings.hint")
-    color: Qt.darker(Commons.Color.foreground, 1.8)
-    font.family: Style.font.family
-    font.pixelSize: Style.font.caption
+    height: Math.max(versionText.implicitHeight, hintText.implicitHeight)
+
+    Text {
+      id: versionText
+      anchors.left: parent.left
+      textFormat: Text.PlainText
+      text: "Omadjinn " + (root.service && root.service.manifest && root.service.manifest.version ? root.service.manifest.version : "")
+      color: Qt.darker(Commons.Color.foreground, 1.8)
+      font.family: Style.font.family
+      font.pixelSize: Style.font.caption
+    }
+
+    Text {
+      id: hintText
+      anchors.right: parent.right
+      textFormat: Text.PlainText
+      text: strings.t("settings.hint")
+      color: Qt.darker(Commons.Color.foreground, 1.8)
+      font.family: Style.font.family
+      font.pixelSize: Style.font.caption
+    }
   }
 }

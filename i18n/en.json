@@ -10,9 +10,8 @@
   "help.back": "‹ Back to settings",
   "help.title": "Omadjinn quick start",
   "help.what": "<b>What it does.</b> Snap a floating window into a zone of the current layout, and cycle between layouts. A toast names the active layout.",
-  "help.keys": "<b>Set your keys.</b> Omadjinn ships with no keybindings. Add the ones you want to <b>~/.config/hypr/bindings.lua</b>, for example:<br><b>o.bind(\"ALT + LEFT\", \"Snap window left\", \"omarchy-shell omadjinn snap left\")</b><br>Commands: <b>snap left|right|up|down</b>, <b>cycle next|prev</b> and <b>toggle</b> (opens this panel). Pick keys that are free. The Omarchy manual explains keybindings: <a href=\"https://omarchy.org/manual/\"><b><u>omarchy.org/manual</u></b></a>",
   "help.settings": "<b>Settings.</b> Each switch turns an optional feature on or off. They are all off until you turn them on. Edit a layout name in its field.",
-  "help.more": "<b>More.</b> Full README, bug reports and suggestions: <a href=\"https://github.com/tonyfarson/omadjinn#readme\"><b><u>github.com/tonyfarson/omadjinn</u></b></a>",
+  "help.more": "<b>More.</b> Full README: <a href=\"https://github.com/tonyfarson/omadjinn#readme\"><b><u>github.com/tonyfarson/omadjinn</u></b></a>",
   "feature.snapTiled.label": "Snap tiled windows too",
   "feature.snapTiled.description": "Off: snap only moves windows that are already floating. On: snapping a tiled or scrolling window floats it first.",
   "help.suggestions": "Suggestions?",
@@ -30,9 +29,6 @@
   "keys.soon": "Click Edit, then press the new keys. Esc cancels.",
   "layouts.custom": "Custom layouts",
   "layouts.custom.soon": "A layout editor is planned. Until then you can add layouts by editing the file.",
-  "about.version": "Version",
-  "about.restart": "Restart plugin",
-  "about.restart.tip": "Restarts the Omarchy shell. Needed only after updating Omadjinn.",
   "keys.description": "Description",
   "keys.bind": "Bind",
   "edit": "Edit",
@@ -44,5 +40,6 @@
   "keys.saved": "Saved",
   "keys.unknown": "That key can't be used.",
   "keys.restore": "Restore defaults",
-  "keys.restored": "Default keys restored"
+  "keys.restored": "Default keys restored",
+  "help.bugs": "Bugs?"
 }
