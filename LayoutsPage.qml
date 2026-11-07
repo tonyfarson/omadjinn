@@ -37,15 +37,10 @@ Column {
         if (name !== modelData.name && root.service) root.service.renameLayout(modelData.id, name)
       }
 
-      Text {
-        textFormat: Text.PlainText
-        width: Style.space(28)
+      // A picture of the layout, drawn from its zones.
+      ZoneThumb {
         anchors.verticalCenter: parent.verticalCenter
-        horizontalAlignment: Text.AlignHCenter
-        text: modelData.icon || ""
-        color: Commons.Color.foreground
-        font.family: Style.font.family
-        font.pixelSize: Style.font.title
+        zones: modelData.zones || []
       }
 
       TextField {

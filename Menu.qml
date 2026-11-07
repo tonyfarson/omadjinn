@@ -223,9 +223,18 @@ Item {
           width: column.width
           height: root.rowHeight
 
+          ZoneThumb {
+            id: layoutThumb
+            anchors.left: parent.left
+            anchors.leftMargin: Style.space(8)
+            anchors.verticalCenter: parent.verticalCenter
+            zones: root.zones
+            color: root.text
+          }
+
           Text {
             textFormat: Text.PlainText
-            anchors.left: parent.left
+            anchors.left: layoutThumb.right
             anchors.leftMargin: Style.space(8)
             anchors.right: prevArrow.left
             anchors.verticalCenter: parent.verticalCenter
