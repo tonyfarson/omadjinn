@@ -91,3 +91,7 @@ Source and issues: https://github.com/tonyfarson/omadjinn. MIT license.
 - The restore is wrapped so that any error falls through to a plain drag; the last error is kept in `~/.local/state/omadjinn/last-error`.
 
 Planned features: see [docs/ROADMAP.md](docs/ROADMAP.md).
+
+## Built with AI
+
+Omadjinn is designed and tested by Tony Farson, and built with the help of [Claude Code](https://claude.com/claude-code), an AI coding assistant from Anthropic.
