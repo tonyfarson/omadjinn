@@ -30,6 +30,34 @@ Status (2026-11-06): an Omarchy shell plugin, working on Omarchy 4.5. Built: sna
 cycle, drag-out restore, a bar icon, and a settings popup with feature switches,
 layout renaming and a quick start. Not built yet: see the roadmap below.
 
+## Install
+
+```
+omarchy plugin add https://github.com/tonyfarson/omadjinn --enable
+```
+
+The genie icon is added to the bar for you. Set your keys (see About Keybindings);
+settings open from the bar icon.
+
+Optional, for drag-out restore: turn on the `dragRestore` switch in the settings, and
+add this block to `~/.config/hypr/bindings.lua`:
+
+```lua
+hl.unbind("SUPER + mouse:272")
+o.bind("SUPER + mouse:272", "Move window (restores pre-snap size)",
+  dofile(os.getenv("HOME") .. "/.config/omarchy/plugins/io.github.tonyfarson.omadjinn/lua/drag.lua"), { mouse = true })
+```
+
+## Remove
+
+```
+omarchy plugin remove io.github.tonyfarson.omadjinn
+```
+
+Removing the plugin leaves your own files alone. To clean up fully, delete
+`~/.config/omadjinn` (settings and your layouts) and `~/.local/state/omadjinn`, and take
+out any Omadjinn binds you added to `~/.config/hypr/bindings.lua`.
+
 ## Use
 
 - Snap (`snap left|right|up|down`) puts the focused window in the current layout's zone in that direction.
@@ -37,10 +65,6 @@ layout renaming and a quick start. Not built yet: see the roadmap below.
 - Cycle (`cycle next|prev`) changes layout; a toast names the active one.
 - A click on the genie icon in the bar opens the settings popup (`toggle` does the same from a key).
 - Bind the keys yourself (see About Keybindings).
-- Install: link this folder into `~/.config/omarchy/plugins/`, run
-  `omarchy-shell shell rescanPlugins`, `omarchy plugin enable io.github.tonyfarson.omadjinn`,
-  add the plugin id to `bar.layout` in `~/.config/omarchy/shell.json`, then `omarchy restart shell`.
-  `SUPER + LEFT MOUSE` drag-out also needs the block in `~/.config/hypr/bindings.lua` that loads `lua/drag.lua`.
 
 ## Layout
 
