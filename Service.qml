@@ -239,6 +239,40 @@ Item {
     saveLayouts(list)
   }
 
+  // ── Right-click menu ───────────────────────────────────────────────────────
+  // hypr/right-click.lua catches a right-click on a titlebar and calls the `menu`
+  // IPC below. The service hands Hyprland that file when the shell starts and after
+  // every config reload, which drops runtime binds.
+  readonly property bool menuEnabled: config.features.rightClickMenu === true
+  readonly property string menuHook: Qt.resolvedUrl("hypr/right-click.lua").toString().replace("file://", "")
+  onMenuEnabledChanged: loadMenuHook()
+
+  function loadMenuHook() {
+    // The path goes into Lua source, so it must be exactly the safe form checked here.
+    if (!/^[A-Za-z0-9_\/.\-]+$/.test(menuHook)) {
+      console.warn("omadjinn: refusing to load the right-click hook from", menuHook)
+      return
+    }
+    run(["hyprctl", "eval", "omadjinn_menu_enabled = " + menuEnabled + " dofile(\"" + menuHook + "\")"], function(out) {
+      if (out.trim() !== "ok") console.warn("omadjinn: hyprctl eval said:", out.trim())
+    })
+  }
+
+  Component.onCompleted: loadMenuHook()
+
+  Connections {
+    target: Hyprland
+    function onRawEvent(event) {
+      if (event && String(event.name) === "configreloaded") root.loadMenuHook()
+    }
+  }
+
+  // Step 1 of the prototype: prove the click reaches the plugin.
+  function openMenu(address, x, y) {
+    Quickshell.execDetached(["omarchy", "osd", "-m", "Omadjinn menu: " + address + " at " + x + ", " + y, "-d", "1500"])
+    return "ok"
+  }
+
   // ── IPC: how keybinds (yours, in bindings.lua) reach the plugin ───────────────────────────
   // omarchy-shell omadjinn snap left|right|up|down
   // omarchy-shell omadjinn cycle next|prev
@@ -252,5 +286,6 @@ Item {
     function open(): string { root.settingsOpen = true; return "open" }
     function close(): string { root.settingsOpen = false; return "closed" }
     function toggle(): string { root.settingsOpen = !root.settingsOpen; return root.settingsOpen ? "open" : "closed" }
+    function menu(address: string, x: string, y: string): string { return root.openMenu(address, x, y) }
   }
 }
