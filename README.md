@@ -1,6 +1,6 @@
-# Omadjinn - Floating Window Controls
+<p align="center"><img src="assets/banner.svg" alt="Omadjinn - Floating Window Controls" width="100%"></p>
 
-Window snapping for floating workspaces on Omarchy 4.5 and later: named layouts
+Omadjinn is a window snapping tool for floating workspaces on Omarchy 4.5 and later: named layouts
 (halves, quadrants, comms 1/3 + 2/3, 1/4 + 1/2 + 1/4, custom), commands to snap
 a window into a zone and to cycle layouts (you choose the keys), and an on-screen
 toast (`omarchy osd`) naming the active layout.
