@@ -55,5 +55,8 @@
   "feature.swap.description": "Off: a snapped window lands on top of the one already in the zone. On: the two trade places, and the other window takes the spot yours came from.",
   "layouts.openfile.lead": "Prefer a text editor?",
   "about.bio1": "Omadjinn (emphasis on the long d) was built by Tony Farson. A dude playing out his midlife crisis by proving he can learn new tricks. By trade, I am a 25 year career in information technology infrastructure and support, customer success, and now SaaS product and release management. My new passion is building AI solutions with an emphasis on trust, observability, and governance/compliance.",
-  "about.bio2": "I use local and frontier models in all aspects of my professional work and my tinkering projects. I design, drive, test, and QA. I dabble in code but let AI do the heavy lifting. Omadjinn is one such project. I hope you enjoy it."
+  "about.bio2": "I use local and frontier models in all aspects of my professional work and my tinkering projects. I design, drive, test, and QA. I dabble in code but let AI do the heavy lifting. Omadjinn is one such project. I hope you enjoy it.",
+  "about.learn": "Learn more about",
+  "about.learn.omadjinn": "Omadjinn",
+  "about.learn.me": "me"
 }
