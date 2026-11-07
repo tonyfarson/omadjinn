@@ -15,5 +15,6 @@
   "help.more": "<b>More.</b> Full README, bug reports and suggestions: <a href=\"https://github.com/tonyfarson/omadjinn#readme\"><b><u>github.com/tonyfarson/omadjinn</u></b></a>",
   "feature.snapTiled.label": "Snap tiled windows too",
   "feature.snapTiled.description": "Off: snap only moves windows that are already floating. On: snapping a tiled or scrolling window floats it first.",
-  "help.suggestions": "Suggestions?"
+  "help.suggestions": "Suggestions?",
+  "help.coffee": "Buy me a coffee"
 }

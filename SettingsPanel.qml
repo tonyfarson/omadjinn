@@ -245,7 +245,8 @@ Item {
 
     Text {
       textFormat: Text.PlainText
-      width: parent.width
+      // Stops short of the genie in the corner.
+      width: parent.width - watermark.width - Style.space(12)
       text: strings.t("help.title")
       color: Commons.Color.foreground
       font.family: Style.font.family
@@ -267,6 +268,31 @@ Item {
         font.family: Style.font.family
         font.pixelSize: Style.font.body
         onLinkActivated: function(link) { Qt.openUrlExternally(link) }
+
+        // Wrap around the genie: lines that start beside it are shorter.
+        onLineLaidOut: function(line) {
+          if (y + line.y < watermark.height + Style.space(8))
+            line.width = width - watermark.width - Style.space(12)
+        }
+      }
+    }
+
+    // A quiet thank-you link at the bottom.
+    Text {
+      topPadding: Style.space(8)
+      textFormat: Text.PlainText
+      text: "\u2615 " + strings.t("help.coffee")
+      color: Qt.darker(Commons.Color.foreground, 1.5)
+      font.family: Style.font.family
+      font.pixelSize: Style.font.caption
+      font.underline: coffeeArea.containsMouse
+
+      MouseArea {
+        id: coffeeArea
+        anchors.fill: parent
+        hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
+        onClicked: Qt.openUrlExternally("https://www.buymeacoffee.com/tonyfarson")
       }
     }
   }
