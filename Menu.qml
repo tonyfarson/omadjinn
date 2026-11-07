@@ -223,13 +223,17 @@ Item {
           width: column.width
           height: root.rowHeight
 
-          ZoneThumb {
+          // The layout's glyph, the same one the toast and the settings page show.
+          Text {
             id: layoutThumb
+            textFormat: Text.PlainText
             anchors.left: parent.left
             anchors.leftMargin: Style.space(8)
             anchors.verticalCenter: parent.verticalCenter
-            zones: root.zones
+            text: root.layout && root.layout.icon ? root.layout.icon : "\uebeb"
             color: root.text
+            font.family: Style.font.family
+            font.pixelSize: Style.font.title
           }
 
           Text {
