@@ -21,6 +21,8 @@ Column {
   readonly property bool isNew: layoutId === ""
   property string newName: ""
   property string newIcon: ""
+  // True while the editor is shut and shown greyed out: it takes no text input then.
+  property bool idle: false
 
   signal finished()
 
@@ -208,12 +210,40 @@ Column {
       font.pixelSize: Style.font.caption
     }
 
-    TextField {
+    // The real field exists only while the editor is open. While it is shut (idle), a look-alike
+    // made of a plain surface and text stands in, so no text input sits in the shell.
+    Loader {
       width: parent.width
-      text: root.newName
-      placeholderText: strings.t("editor.name.placeholder")
-      onTextChanged: root.newName = text
-      onAccepted: root.save()
+      active: !root.idle
+      visible: active
+      sourceComponent: TextField {
+        text: root.newName
+        placeholderText: strings.t("editor.name.placeholder")
+        onTextChanged: root.newName = text
+        onAccepted: root.save()
+      }
+    }
+
+    BorderSurface {
+      id: fakeField
+      visible: root.idle
+      width: parent.width
+      readonly property var spec: Border.controlSpec("normal", Commons.Color.foreground, Commons.Color.accent)
+      height: fakeText.implicitHeight + 2 * Style.spacing.inputPaddingY + Border.top(spec) + Border.bottom(spec)
+      color: Style.controlFill(false, false, Commons.Color.foreground, Commons.Color.accent)
+      borderSpec: spec
+      radius: Style.cornerRadius
+
+      Text {
+        id: fakeText
+        x: Style.spacing.controlPaddingX + Border.left(fakeField.spec)
+        anchors.verticalCenter: parent.verticalCenter
+        textFormat: Text.PlainText
+        text: strings.t("editor.name.placeholder")
+        color: Qt.darker(Commons.Color.foreground, 1.6)
+        font.family: Style.font.family
+        font.pixelSize: Style.font.body
+      }
     }
 
     Text {

@@ -62,7 +62,7 @@ const qml = readdirSync(root).filter((f) => f.endsWith(".qml"));
 // 3a. Text inputs: each must only exist while its UI is open. List every one for a human to confirm.
 for (const f of qml) {
   read(f).split("\n").forEach((line, i) => {
-    if (/^\s*(TextField|TextInput|TextArea)\s*\{/.test(line)) {
+    if (/\b(TextField|TextInput|TextArea)\s*\{/.test(line)) {
       const loaded = /Loader|sourceComponent/.test(read(f)) || f === "ZoneEditor.qml";
       add("review", `text input ${f}:${i + 1}`, loaded
         ? "confirm it lives inside a Loader that is active only while its UI is open"

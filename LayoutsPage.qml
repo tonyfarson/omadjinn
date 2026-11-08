@@ -61,8 +61,11 @@ Column {
 
   signal scrollRequested(real y)
 
-  // The editor is created when it opens and destroyed when it closes, so it starts fresh
-  // each time and its text field does not exist while the editor is shut.
+  // Opening the editor starts it fresh and brings it into view.
+  onEditorOpenChanged: {
+    zoneEditor.load()
+    if (editorOpen) scrollRequested(listView.y + zoneEditor.y - Style.space(8))
+  }
 
   Column {
     id: listView
@@ -304,59 +307,19 @@ Column {
       font.pixelSize: Style.font.caption
     }
 
-    // While the editor is shut, a drawing of it greyed out holds its place. It is only shapes
-    // and text, so nothing in it takes input.
-    Item {
-      visible: !root.editorOpen
+    // The zone editor lives here, greyed out until New layout (or Edit zones) opens it. While it
+    // is shut it holds no text input (see ZoneEditor.idle).
+    ZoneEditor {
+      id: zoneEditor
       width: root.width
-      height: Math.round(width * 0.625)
-      opacity: 0.35
-
-      Rectangle {
-        anchors.fill: parent
-        color: "transparent"
-        border.width: 1
-        border.color: Util.alpha(Commons.Color.foreground, 0.6)
-      }
-
-      Repeater {
-        model: 2
-
-        Rectangle {
-          required property int index
-          x: index * parent.width / 2
-          width: parent.width / 2
-          height: parent.height
-          color: Util.alpha(Commons.Color.foreground, 0.08)
-          border.width: 1
-          border.color: Util.alpha(Commons.Color.foreground, 0.5)
-
-          Text {
-            anchors.centerIn: parent
-            textFormat: Text.PlainText
-            text: String(parent.index + 1)
-            color: Util.alpha(Commons.Color.foreground, 0.7)
-            font.family: Style.font.family
-            font.pixelSize: Style.font.title
-          }
-        }
-      }
-    }
-
-    // The zone editor lives here, loaded only while New layout (or Edit zones) has it open.
-    Loader {
-      id: editorLoader
-      width: root.width
-      active: root.editorOpen
-      onLoaded: root.scrollRequested(listView.y + editorLoader.y - Style.space(8))
-      sourceComponent: ZoneEditor {
-        width: root.width
-        service: root.service
-        layoutId: root.editorFor === "new" ? "" : root.editorFor
-        glyphs: root.glyphs
-        defaultIcon: root.defaultIcon
-        onFinished: root.editorFor = ""
-      }
+      idle: !root.editorOpen
+      enabled: root.editorOpen
+      opacity: root.editorOpen ? 1 : 0.35
+      service: root.service
+      layoutId: root.editorFor === "new" ? "" : root.editorFor
+      glyphs: root.glyphs
+      defaultIcon: root.defaultIcon
+      onFinished: root.editorFor = ""
     }
 
     // Plain text, then a link in the accent colour.
