@@ -2,7 +2,7 @@
 
 All notable changes to Omadjinn - Floating Window Controls. Dates are YYYY-MM-DD.
 
-## Unreleased (1.1.1)
+## 1.1.1 - 2026-11-07
 
 ### Added
 - Saving a new layout now asks for a name and an icon in the zone editor (issue #1), so there is no need to click Edit afterwards.
