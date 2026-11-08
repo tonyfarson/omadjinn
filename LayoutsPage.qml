@@ -41,7 +41,9 @@ Column {
     if (service) service.undoLayouts = null
   }
 
-  onVisibleChanged: if (!visible) forgetDelete()
+  // Leaving the page, or closing the panel, also shuts the zone editor, so its name field is
+  // destroyed and no text input is left in the shell behind a closed panel.
+  onVisibleChanged: if (!visible) { forgetDelete(); editorFor = "" }
   Component.onDestruction: forgetDelete()
 
   // Shown when a layout has no glyph, and the choices offered when editing one.
@@ -85,6 +87,8 @@ Column {
         // The name is plain text until Edit is clicked; the button then reads Save.
         // While editing, the glyph choices show under the name.
         property bool editing: false
+        // Same for a name being edited in this row: it closes when the page is left.
+        onVisibleChanged: if (!visible) editing = false
         width: root.width
         spacing: Style.space(8)
 
