@@ -4,6 +4,10 @@ All notable changes to Omadjinn - Floating Window Controls. Dates are YYYY-MM-DD
 
 ## Unreleased (1.1.1)
 
+### Added
+- Saving a new layout now asks for a name and an icon in the zone editor (issue #1), so there is no need to click Edit afterwards.
+  An empty name still becomes "Custom N".
+
 ### Fixed
 - Right-clicking a page could open the Omadjinn menu instead of the app's own menu. A window on a hidden workspace
   (such as the scratchpad) still had an invisible title bar that caught clicks. Only windows on a workspace you can

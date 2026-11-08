@@ -427,15 +427,18 @@ Item {
     })
   }
 
-  // Saves a layout's zones. An empty id makes a new layout and returns its id.
-  function saveZones(id, zones) {
+  // Saves a layout's zones. An empty id makes a new layout and returns its id. For a new layout,
+  // `name` and `icon` are optional: an empty name stays "Custom N", an empty icon leaves the default.
+  function saveZones(id, zones, name, icon) {
     var list = JSON.parse(JSON.stringify(layouts))
     if (id === "") {
       var n = 1
       var taken = function(x) { for (var i = 0; i < list.length; i++) if (list[i].id === x) return true; return false }
       while (taken("custom-" + n)) n++
       id = "custom-" + n
-      list.push({ id: id, name: "Custom " + n, zones: zones })
+      var made = { id: id, name: (name || "").trim() || "Custom " + n, zones: zones }
+      if (icon) made.icon = icon
+      list.push(made)
     } else {
       for (var j = 0; j < list.length; j++) if (list[j].id === id) list[j].zones = zones
     }

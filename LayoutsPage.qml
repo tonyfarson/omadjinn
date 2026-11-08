@@ -292,6 +292,8 @@ Column {
       opacity: root.editorOpen ? 1 : 0.35
       service: root.service
       layoutId: root.editorFor === "new" ? "" : root.editorFor
+      glyphs: root.glyphs
+      defaultIcon: root.defaultIcon
       onFinished: root.editorFor = ""
     }
 

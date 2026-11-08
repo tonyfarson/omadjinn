@@ -14,6 +14,14 @@ Column {
   // The layout being edited, or "" for a new one.
   property string layoutId: ""
 
+  // Icons offered for a new layout, and the one used when none is picked (both from the page).
+  property var glyphs: []
+  property string defaultIcon: ""
+  // A new layout is named and given an icon here; an existing one keeps Edit on the page.
+  readonly property bool isNew: layoutId === ""
+  property string newName: ""
+  property string newIcon: ""
+
   signal finished()
 
   spacing: Style.space(10)
@@ -28,6 +36,8 @@ Column {
   readonly property var lines: Model.splitLines(tree)
 
   function load() {
+    newName = ""
+    newIcon = ""
     selectedLine = null
     selectedZone = []
     if (layoutId === "") { tree = ({ leaf: true }); drawable = true; return }
@@ -57,7 +67,7 @@ Column {
   }
 
   function save() {
-    if (service) service.saveZones(layoutId, Model.treeToZones(tree))
+    if (service) service.saveZones(layoutId, Model.treeToZones(tree), isNew ? newName : "", isNew ? newIcon : "")
     finished()
   }
 
@@ -182,6 +192,69 @@ Column {
     color: Qt.darker(Commons.Color.foreground, 1.5)
     font.family: Style.font.family
     font.pixelSize: Style.font.caption
+  }
+
+  // Name and icon, for a new layout only.
+  Column {
+    visible: root.drawable && root.isNew
+    width: parent.width
+    spacing: Style.space(6)
+
+    Text {
+      textFormat: Text.PlainText
+      text: strings.t("editor.name")
+      color: Qt.darker(Commons.Color.foreground, 1.5)
+      font.family: Style.font.family
+      font.pixelSize: Style.font.caption
+    }
+
+    TextField {
+      width: parent.width
+      text: root.newName
+      placeholderText: strings.t("editor.name.placeholder")
+      onTextChanged: root.newName = text
+      onAccepted: root.save()
+    }
+
+    Text {
+      textFormat: Text.PlainText
+      text: strings.t("editor.glyph")
+      color: Qt.darker(Commons.Color.foreground, 1.5)
+      font.family: Style.font.family
+      font.pixelSize: Style.font.caption
+    }
+
+    Flow {
+      width: parent.width
+      spacing: Style.space(6)
+
+      Repeater {
+        model: root.glyphs
+
+        Item {
+          required property string modelData
+          readonly property bool current: (root.newIcon || root.defaultIcon) === modelData
+          width: pick.width
+          height: pick.height
+
+          Rectangle {
+            anchors.fill: parent
+            radius: Style.cornerRadius
+            color: Commons.Color.accent
+            visible: parent.current
+          }
+
+          Button {
+            id: pick
+            text: parent.modelData
+            bordered: true
+            fontSize: Style.font.title
+            foreground: parent.current ? Commons.Color.background : Commons.Color.foreground
+            onClicked: root.newIcon = parent.modelData
+          }
+        }
+      }
+    }
   }
 
   Row {
