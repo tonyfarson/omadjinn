@@ -29,11 +29,15 @@ end
 
 -- The topmost floating window whose titlebar is under the point, or nil.
 -- Hyprland lists windows bottom to top, so the last match is the one on top.
-function M.titlebar_target(windows, x, y, bar)
+-- `shown` is a set of workspace ids that are on screen. Hyprland reports windows on a hidden
+-- workspace (a closed special workspace, another workspace) as visible, so without it their
+-- titlebars would claim clicks meant for the window you see. nil means no filtering.
+function M.titlebar_target(windows, x, y, bar, shown)
   local hit
   for _, window in ipairs(windows) do
     if window.mapped and window.visible and not window.hidden
         and window.floating and window.fullscreen == 0 and has_tag(window, FLOATING_TAG)
+        and (shown == nil or (window.workspace and shown[window.workspace.id]))
         and M.over_titlebar(window, x, y, bar) then
       hit = window
     end
@@ -46,6 +50,22 @@ local function bar_height()
   return (ok and tonumber(value)) or 30
 end
 
+-- The workspaces on screen: each monitor's active and special workspace, plus the focused window's.
+local function shown_workspaces()
+  local shown = {}
+  local function add(ws)
+    local ok, id = pcall(function() return ws and ws.id end)
+    if ok and id then shown[id] = true end
+  end
+  for _, m in ipairs(hl.get_monitors() or {}) do
+    pcall(function() add(m.active_workspace) end)
+    pcall(function() add(m.special_workspace) end)
+  end
+  local active = hl.get_active_window()
+  if active then add(active.workspace) end
+  return shown
+end
+
 local pressed -- the press we claimed, if any
 
 local function on_press()
@@ -54,7 +74,7 @@ local function on_press()
     return { pass_event = true }
   end
   local cursor = hl.get_cursor_pos()
-  local window = M.titlebar_target(hl.get_windows(), cursor.x, cursor.y, bar_height())
+  local window = M.titlebar_target(hl.get_windows(), cursor.x, cursor.y, bar_height(), shown_workspaces())
   pressed = window and { window = window, x = cursor.x, y = cursor.y } or nil
   return { pass_event = pressed == nil }
 end

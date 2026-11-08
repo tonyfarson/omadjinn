@@ -8,6 +8,7 @@ local function window(over)
   local w = {
     address = "0x1", mapped = true, visible = true, hidden = false, floating = true, fullscreen = 0,
     tags = { "omarchy-floating-workspace" },
+    workspace = { id = 2 },
     at = { x = 100, y = 200 }, size = { x = 400, y = 300 },
   }
   for k, v in pairs(over or {}) do w[k] = v end
@@ -43,5 +44,14 @@ assert(M.titlebar_target({ above, below }, 300, 185, BAR) == below, "order decid
 -- The bar height matters: a click 20 px up is on a 30 px bar but not on a 10 px one.
 assert(M.titlebar_target({ w }, 300, 180, 30) == w)
 assert(M.titlebar_target({ w }, 300, 180, 10) == nil)
+
+-- A floating window on a workspace that is not on screen (a hidden special workspace, another
+-- workspace) must not claim a click, even though Hyprland reports it as visible.
+local hidden_ws = window({ workspace = { id = -98 } })
+local shown = { [2] = true }
+assert(M.titlebar_target({ hidden_ws }, 300, 185, BAR, shown) == nil, "window on a workspace not shown")
+assert(M.titlebar_target({ w }, 300, 185, BAR, shown) == w, "window on a shown workspace")
+assert(M.titlebar_target({ w, hidden_ws }, 300, 185, BAR, shown) == w, "hidden window on top does not win")
+assert(M.titlebar_target({ hidden_ws }, 300, 185, BAR) == hidden_ws, "no shown set: no filter")
 
 print("right-click.test.lua: ok")
