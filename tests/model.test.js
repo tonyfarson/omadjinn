@@ -2,7 +2,7 @@
 const fs = require("fs"), assert = require("assert")
 const M = {}; new Function("exports", fs.readFileSync(__dirname + "/../Model.js", "utf8").replace(".pragma library", "") + "\nObject.assign(exports,{parseGap,zonesFor,pickZone,origSize,nextLayoutIndex,zoneName,KEY_ACTIONS,parseKey,keysFor,keyConflict,layoutProblem,checkLayouts,treeToZones,zonesToTree,splitZone,mergeSplit,moveSplit,splitLines,nodeRect,nodeAt,leafZones,occupants,stackOrder,rotateStack})")(M)
 
-// kijo's monitor: 3840x2160 at scale 1.5, bar reserves 30 at the top.
+// A 4K monitor: 3840x2160 at scale 1.5, bar reserves 30 at the top.
 const mon = { x: -1280, y: -1440, width: 3840, height: 2160, scale: 1.5, reserved: [0, 30, 0, 0] }
 const halves = [[0, 0, 0.5, 1], [0.5, 0, 0.5, 1]]
 

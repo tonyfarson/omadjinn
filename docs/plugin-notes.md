@@ -23,7 +23,7 @@ Read 2026-11-06 from `docs/omarchy-shell.md` (upstream repo clone), `/usr/share/
 - Strings in `i18n/<lang>.json` read through `Commons.Translations`; English alone is fine to start.
 - Build on `qs.Ui` (`KeyboardPanel`, `PopupCard`, `Button`).
 
-## Verified in real third-party plugins (read on kijo, 2026-11-06)
+## Verified in real third-party plugins (read 2026-11-06)
 `bogdart.dock` (kind `panel`, `~/.config/omarchy/plugins/bogdart.dock/Dock.qml`) and `io.github.villainru.panel-resources` (kinds `service` + `bar-widget`):
 - **Read shell.json directly.** Since Omarchy 4.0.4 the facade has no `shellConfig`, so bogdart reads `~/.config/omarchy/shell.json` with a `FileView` (`watchChanges: true`) and picks out its own `plugins[]` entry. This is the workaround the dock clone needed.
 - **Run commands:** `Process { command: [...] }` and `Quickshell.execDetached([...])` both work from a third-party plugin.
@@ -46,7 +46,7 @@ Read 2026-11-06 from `docs/omarchy-shell.md` (upstream repo clone), `/usr/share/
 ## Verified 2026-11-06 (port of snap and cycle)
 - `hyprctl dispatch 'hl.dsp.window.resize/move(...)'` works (same request `Hyprland.dispatch` sends; bogdart uses it in QML).
 - A plugin can register a keybind at runtime with `hyprctl eval 'hl.bind(...)'`; it shows in `hyprctl binds`, but **a config reload wipes it**, so a plugin must re-add its binds after every reload.
-- The QML port (`Model.js` + `Panel.qml`) lands windows on exactly the same boxes as the Python script (compared on kijo, Comms layout, left and right). `omarchy-shell omadjinn snap <dir>` and `cycle <next|prev>` work; cycle writes the same state file as the script.
+- The QML port (`Model.js` + `Panel.qml`) lands windows on exactly the same boxes as the Python script (compared with the Comms layout, left and right). `omarchy-shell omadjinn snap <dir>` and `cycle <next|prev>` work; cycle writes the same state file as the script.
 
 ## Still to verify
 - How the plugin notices a config reload (candidate: `Hyprland.rawEvent`, name `configreloaded`), so it can re-register its binds.

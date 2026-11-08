@@ -1,13 +1,14 @@
 import QtQuick
 import QtQuick.Shapes
+import qs.Commons
 
 // The omadjinn bar icon: a genie bust, traced from assets/genie-bust.svg.
 // One shape, filled with whatever color the bar gives it, so it follows every
-// theme (white on dark bars, black on light ones) with no second file.
+// theme (light on dark bars, dark on light ones) with no second file.
 Shape {
   id: root
 
-  property color color: "white"
+  property color color: Color.foreground
 
   width: 46.2
   height: 62.2

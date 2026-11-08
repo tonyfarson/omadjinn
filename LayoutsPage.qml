@@ -79,7 +79,7 @@ Column {
         required property int index
         // After a delete the row is replaced, in the same space, by a restore bar.
         readonly property bool gone: root.ghost !== null && index === root.ghost.index
-        // The name is read-only until Edit is clicked; the button then reads Save.
+        // The name is plain text until Edit is clicked; the button then reads Save.
         // While editing, the glyph choices show under the name.
         property bool editing: false
         width: root.width
@@ -88,10 +88,10 @@ Column {
         // Saves the name (or puts the old one back) and closes the field.
         function finish(save) {
           if (!editing) return
+          var name = nameLoader.item ? nameLoader.item.text.trim() : ""
           editing = false
           root.focusRequested()
-          var name = nameField.text.trim()
-          if (!save || name === "") { nameField.text = modelData.name || modelData.id; return }
+          if (!save || name === "") return
           if (name !== modelData.name && root.service) root.service.renameLayout(modelData.id, name)
         }
 
@@ -99,7 +99,7 @@ Column {
         Button {
           visible: layoutRow.gone
           width: parent.width
-          height: Math.max(implicitHeight, nameField.implicitHeight)
+          height: Math.max(implicitHeight, editButton.height)
           text: strings.t("layouts.restore.row")
           bordered: true
           onClicked: root.undoRemove()
@@ -122,14 +122,39 @@ Column {
             font.pixelSize: Style.font.title
           }
 
-          TextField {
-            id: nameField
+          // The name shows as plain text. The text field exists only while Edit is open, so no
+          // text input sits in the shell the rest of the time.
+          Item {
+            id: nameBox
             width: parent.width - Style.space(40) - editButton.width - Style.space(12) - (trashButton.visible ? trashButton.width + Style.space(12) : 0)
-            readOnly: !layoutRow.editing
-            text: modelData.name || modelData.id
-            // Enter or leaving the field saves; Esc puts the old name back.
-            onEditingFinished: layoutRow.finish(true)
-            Keys.onEscapePressed: layoutRow.finish(false)
+            height: editButton.height
+            anchors.verticalCenter: parent.verticalCenter
+
+            Text {
+              visible: !layoutRow.editing
+              anchors.verticalCenter: parent.verticalCenter
+              width: parent.width
+              elide: Text.ElideRight
+              textFormat: Text.PlainText
+              text: layoutRow.modelData.name || layoutRow.modelData.id
+              color: Commons.Color.foreground
+              font.family: Style.font.family
+              font.pixelSize: Style.font.body
+            }
+
+            Loader {
+              id: nameLoader
+              anchors.verticalCenter: parent.verticalCenter
+              width: parent.width
+              active: layoutRow.editing
+              sourceComponent: TextField {
+                text: layoutRow.modelData.name || layoutRow.modelData.id
+                // Enter saves; Esc keeps the old name.
+                onAccepted: layoutRow.finish(true)
+                Keys.onEscapePressed: layoutRow.finish(false)
+                Component.onCompleted: { forceActiveFocus(); cursorPosition = text.length }
+              }
+            }
           }
 
           // Edit opens the field with the cursor at the end of the name; Save closes it.
@@ -141,8 +166,6 @@ Column {
             onClicked: {
               if (layoutRow.editing) { layoutRow.finish(true); return }
               layoutRow.editing = true
-              nameField.forceActiveFocus()
-              nameField.cursorPosition = nameField.text.length
             }
           }
 
