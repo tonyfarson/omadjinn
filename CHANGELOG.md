@@ -2,6 +2,18 @@
 
 All notable changes to Omadjinn - Floating Window Controls. Dates are YYYY-MM-DD.
 
+## 1.1.2 - 2026-11-07
+
+### Fixed
+- The settings panel no longer leaves a text input in the shell while it is idle. The new-layout name field and the
+  layout name fields used to exist as soon as the Layouts page had been shown, and stayed after the panel closed. They
+  are now created only while you are typing in them. This came out of the marketplace review of 1.1.1.
+- The bar icon's default colour follows the theme instead of a fixed white.
+
+### Changed
+- On the Layouts page, layout names show as plain text until you click Edit. The editor below the list still shows
+  greyed out until New layout or Edit zones opens it; it looks the same as before.
+
 ## 1.1.1 - 2026-11-07
 
 ### Added

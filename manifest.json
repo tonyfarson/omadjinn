@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "io.github.tonyfarson.omadjinn",
   "name": "Omadjinn - Floating Window Controls",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "author": "Tony Farson",
   "license": "MIT",
   "description": "Snap layouts for floating windows: named zone layouts, snap keys, a layout cycler and a settings panel.",
