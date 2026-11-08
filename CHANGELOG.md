@@ -2,6 +2,13 @@
 
 All notable changes to Omadjinn - Floating Window Controls. Dates are YYYY-MM-DD.
 
+## 1.1.3 - 2026-11-07
+
+### Fixed
+- Closing the settings panel, or leaving the Layouts page, now also closes the zone editor and any layout name you
+  were editing. Before, an editor left open stayed alive inside the closed panel, and so did its name field. No text
+  input is left in the shell behind a closed panel now. Unsaved edits are dropped, as Cancel would.
+
 ## 1.1.2 - 2026-11-07
 
 ### Fixed
