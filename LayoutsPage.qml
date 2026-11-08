@@ -304,6 +304,45 @@ Column {
       font.pixelSize: Style.font.caption
     }
 
+    // While the editor is shut, a drawing of it greyed out holds its place. It is only shapes
+    // and text, so nothing in it takes input.
+    Item {
+      visible: !root.editorOpen
+      width: root.width
+      height: Math.round(width * 0.625)
+      opacity: 0.35
+
+      Rectangle {
+        anchors.fill: parent
+        color: "transparent"
+        border.width: 1
+        border.color: Util.alpha(Commons.Color.foreground, 0.6)
+      }
+
+      Repeater {
+        model: 2
+
+        Rectangle {
+          required property int index
+          x: index * parent.width / 2
+          width: parent.width / 2
+          height: parent.height
+          color: Util.alpha(Commons.Color.foreground, 0.08)
+          border.width: 1
+          border.color: Util.alpha(Commons.Color.foreground, 0.5)
+
+          Text {
+            anchors.centerIn: parent
+            textFormat: Text.PlainText
+            text: String(parent.index + 1)
+            color: Util.alpha(Commons.Color.foreground, 0.7)
+            font.family: Style.font.family
+            font.pixelSize: Style.font.title
+          }
+        }
+      }
+    }
+
     // The zone editor lives here, loaded only while New layout (or Edit zones) has it open.
     Loader {
       id: editorLoader
