@@ -61,11 +61,8 @@ Column {
 
   signal scrollRequested(real y)
 
-  // Opening the editor starts it fresh and brings it into view.
-  onEditorOpenChanged: {
-    zoneEditor.load()
-    if (editorOpen) scrollRequested(listView.y + zoneEditor.y - Style.space(8))
-  }
+  // The editor is created when it opens and destroyed when it closes, so it starts fresh
+  // each time and its text field does not exist while the editor is shut.
 
   Column {
     id: listView
@@ -284,17 +281,20 @@ Column {
       font.pixelSize: Style.font.caption
     }
 
-    // The zone editor lives here, greyed out until New layout (or Edit zones) opens it.
-    ZoneEditor {
-      id: zoneEditor
+    // The zone editor lives here, loaded only while New layout (or Edit zones) has it open.
+    Loader {
+      id: editorLoader
       width: root.width
-      enabled: root.editorOpen
-      opacity: root.editorOpen ? 1 : 0.35
-      service: root.service
-      layoutId: root.editorFor === "new" ? "" : root.editorFor
-      glyphs: root.glyphs
-      defaultIcon: root.defaultIcon
-      onFinished: root.editorFor = ""
+      active: root.editorOpen
+      onLoaded: root.scrollRequested(listView.y + editorLoader.y - Style.space(8))
+      sourceComponent: ZoneEditor {
+        width: root.width
+        service: root.service
+        layoutId: root.editorFor === "new" ? "" : root.editorFor
+        glyphs: root.glyphs
+        defaultIcon: root.defaultIcon
+        onFinished: root.editorFor = ""
+      }
     }
 
     // Plain text, then a link in the accent colour.
