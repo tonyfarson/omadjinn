@@ -35,9 +35,13 @@ All notable changes to Omadjinn - Floating Window Controls. Dates are YYYY-MM-DD
 ## 1.1.0 - 2026-11-07
 
 ### Added
+- Right-click menu (off by default): right-click a floating window's titlebar to pick a zone of the current
+  layout or change the layout. Keyboard control (arrows, Enter, number keys, Esc), theme colors only, and a
+  `menuFocused` command to open it on the focused window from a key.
+- Snapping now focuses the window and raises it to the top.
 - Default keys, registered by the plugin at runtime (no `bindings.lua` edit): `ALT + arrows` snap,
-  `ALT + comma` / `period` cycle layouts, `ALT + C` the menu, `ALT + S` the settings. A key that something
-  else already holds is left alone. Change or switch off any key in the new **Keybinds** page (Edit records the
+  `ALT + comma` / `period` cycle layouts, `ALT + C` the menu (when the right-click menu is switched on),
+  `ALT + S` the settings. A key that something else already holds is left alone. Change or switch off any key in the new **Keybinds** page (Edit records the
   new keys, with conflict checks) or in `config.json`; Restore defaults puts them back.
 - Stacking: `ALT + SHIFT + arrows` snap and stack on top of what is in the zone. Each zone remembers the order windows
   joined, and `ALT + grave` / `ALT + SHIFT + grave` step through the stack.
@@ -51,16 +55,16 @@ All notable changes to Omadjinn - Floating Window Controls. Dates are YYYY-MM-DD
 - Settings panel redesign: a fixed frame the height of the tallest page, with page buttons (General, Keybinds,
   Layouts, About), links for suggestions, bugs and coffee, the version in the footer, and a scroll bar that shows
   only when a page overflows.
+- An About page with a few words from the developer and links to learn more.
 
 ### Changed
-- The About page is shorter, and the Restart button is gone.
 - The "Known limit" on titlebar drags is now documented as intended: `SUPER + LEFT MOUSE` restores the default
   floating size, and dragging by the titlebar is Hyprland's own drag.
 
 ### Notes
 - Window gaps are Omarchy's (`SUPER + SHIFT + BACKSPACE`); Omadjinn follows the live gaps.
 
-## 1.0.0 - 2026-11-07
+## 1.0.0 - 2026-11-06
 
 First release.
 
@@ -69,17 +73,15 @@ First release.
 - Cycle between layouts, with a toast that names the active one.
 - Bundled layouts: halves ("Split"), stacked, quadrants, comms (1/3 + 2/3), and
   wide middle (1/4 + 1/2 + 1/4). Add your own in `~/.config/omadjinn/layouts.json`.
-- Settings popup from a bar icon: feature switches, layout renaming, and a quick start.
+- Settings popup from a bar icon: feature switches, layout renaming, and a quick start with links to
+  suggestions, bug reports and the README. The genie sits in the header corner, in the theme text color.
 - Optional feature switches, all off by default:
   - `dragRestore`: dragging a snapped window out with SUPER + LEFT MOUSE resizes it to
     Omarchy's default floating size.
   - `snapTiled`: snapping also floats tiled and scrolling windows.
 - The popup follows the system font and theme colors, and closes with Esc or a click outside.
-- Right-click menu, a switch that is off by default: right-click a floating window's titlebar to pick
-  a zone of the current layout or change the layout. Keyboard control (arrows, Enter, number keys,
-  Esc), theme colors only, and a `menuFocused` command to open it on the focused window from a key.
-- Snapping now focuses the window and raises it to the top.
+- A Buy Me a Coffee funding link on the repository.
 
 ### Notes
-- 1.0.0 shipped with no keybindings; see Unreleased for the defaults.
-- Two ways to drag, on purpose: `SUPER + LEFT MOUSE` restores Omarchy's default floating size; dragging by the titlebar is Hyprland's own drag and keeps the snapped size.
+- Omadjinn shipped with no keybindings. Default keys came in 1.1.0.
+- Known limit: drag-out restore works only when you grab the window body, not its titlebar.
