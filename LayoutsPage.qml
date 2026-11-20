@@ -155,6 +155,9 @@ Column {
               width: parent.width
               active: layoutRow.editing
               sourceComponent: TextField {
+                // Read-only unless focused: Qt 6.12 makes writable fields read the whole
+                // clipboard on every change (QTBUG-149610). A read-only field does not.
+                readOnly: !activeFocus
                 text: layoutRow.modelData.name || layoutRow.modelData.id
                 // Enter saves; Esc keeps the old name.
                 onAccepted: layoutRow.finish(true)

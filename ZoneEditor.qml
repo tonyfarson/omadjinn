@@ -217,6 +217,9 @@ Column {
       active: !root.idle
       visible: active
       sourceComponent: TextField {
+        // Read-only unless focused: Qt 6.12 makes writable fields read the whole
+        // clipboard on every change (QTBUG-149610). A read-only field does not.
+        readOnly: !activeFocus
         text: root.newName
         placeholderText: strings.t("editor.name.placeholder")
         onTextChanged: root.newName = text
