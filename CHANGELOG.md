@@ -2,6 +2,18 @@
 
 All notable changes to Omadjinn - Floating Window Controls. Dates are YYYY-MM-DD.
 
+## 1.1.4 - 2026-11-20
+
+### Fixed
+- The layout name fields (renaming a layout, and naming a new one in the zone editor) never read the clipboard now.
+  On Qt 6.12 a writable text field reads the whole clipboard every time it changes, even with no paste (Qt bug
+  QTBUG-149610). These fields are now always read-only to Qt and handle typing themselves, so the clipboard is never
+  touched.
+
+### Changed
+- You cannot paste into a layout name field, and its right-click menu is gone. Typing, Backspace, Delete, the arrow
+  keys, Enter (save) and Esc (cancel) work as before. Text from an input method (IME) cannot be entered there.
+
 ## 1.1.3 - 2026-11-07
 
 ### Fixed

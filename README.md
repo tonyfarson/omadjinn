@@ -82,7 +82,8 @@ out any Omadjinn binds you added to `~/.config/hypr/bindings.lua`.
   every key with an Edit button, Layouts manages your layouts, and About has the basics.
 - **Layouts page.**
   - Each layout shows its glyph (the same one the toast and the menu use) and its name. Click Edit to rename
-    it, pick another glyph, or open its zones in the editor.
+    it, pick another glyph, or open its zones in the editor. Name fields take typing only: paste is off on purpose,
+    so they never read the clipboard (see the 1.1.4 notes).
   - **New layout** and **Edit zones** open the zone editor: click a zone and split it, drag a line to move it
     (lines snap to twelfths: halves, thirds, quarters, sixths), click a line and merge it away, then Save. A new
     layout is saved as "Custom 1" and so on.
